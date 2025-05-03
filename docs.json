@@ -63,15 +63,10 @@
           "icon": "book-open-cover"
         },
         {
-          "anchor": "Community",
+          "anchor": "Discord",
           "href": "https://discord.gg/pXmG5CuveT",
           "icon": "discord"
         },
-        {
-          "anchor": "Blog",
-          "href": "https://hub.serververs.com",
-          "icon": "newspaper"
-        }
       ]
     }
   },
