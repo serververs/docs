@@ -63,16 +63,17 @@
           "icon": "book-open-cover"
         },
         {
-          "anchor": "Discord",
+          "anchor": "Community",
           "href": "https://discord.gg/pXmG5CuveT",
           "icon": "discord"
         },
         {
-          "anchor": "X",
+          "anchor": "Updates at X",
           "href": "https://x.com/serververs",
           "icon": "x-twitter"
-        },
+        }
       ]
+    }
   },
   "logo": {
     "light": "https://serververs.com/assets/images/3-bg-removed.ico",
@@ -88,7 +89,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://store.serververs.com"
+      "href": "https://store.serververs.com/dashboard"
     }
   },
   "footer": {
