@@ -67,6 +67,11 @@
           "href": "https://discord.gg/pXmG5CuveT",
           "icon": "discord"
         },
+        {
+          "anchor": "X",
+          "href": "https://x.com/serververs",
+          "icon": "x-twitter"
+        },
       ]
   },
   "logo": {
