@@ -21,51 +21,9 @@
             ]
           },
           {
-            "group": "Serververse Store",
-            "pages": [
-              "store/account-access",
-              "store/choosing-a-service",
-              "store/accessing-panel",
-              "store/onboarding-flow"
-            ]
-          },
-          {
-            "group": "Web Hosting",
-            "pages": [
-              "web/getting-started",
-              "web/cyberpanel-basics",
-              "web/wordpress-setup",
-              "web/email-setup",
-              "web/ssl-configuration"
-            ]
-          },
-          {
             "group": "Minecraft",
             "pages": [
-              "minecraft/start-server",
-              "minecraft/plugins-mods",
-              "minecraft/map-upload",
-              "minecraft/version-changer",
-              "minecraft/schedules-backups"
-            ]
-          },
-          {
-            "group": "Cloud VPS",
-            "pages": [
-              "cloud/vps-launch",
-              "cloud/proxmox-panel",
-              "cloud/ssh-access",
-              "cloud/reinstall-vm",
-              "cloud/snapshot-backup"
-            ]
-          },
-          {
-            "group": "Enterprise",
-            "pages": [
-              "enterprise/getting-started",
-              "enterprise/partner-program",
-              "enterprise/white-labeling",
-              "enterprise/sla-monitoring"
+              "minecraft/start-server"
             ]
           }
         ]
