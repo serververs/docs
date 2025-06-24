@@ -17,39 +17,55 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "quickstart",
-              "development"
+              "quickstart"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Serververse Store",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "API Documentation",
-            "pages": [
-              "api-reference/introduction"
+              "store/account-access",
+              "store/choosing-a-service",
+              "store/accessing-panel",
+              "store/onboarding-flow"
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Web Hosting",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "web/getting-started",
+              "web/cyberpanel-basics",
+              "web/wordpress-setup",
+              "web/email-setup",
+              "web/ssl-configuration"
+            ]
+          },
+          {
+            "group": "Minecraft",
+            "pages": [
+              "minecraft/start-server",
+              "minecraft/plugins-mods",
+              "minecraft/map-upload",
+              "minecraft/version-changer",
+              "minecraft/schedules-backups"
+            ]
+          },
+          {
+            "group": "Cloud VPS",
+            "pages": [
+              "cloud/vps-launch",
+              "cloud/proxmox-panel",
+              "cloud/ssh-access",
+              "cloud/reinstall-vm",
+              "cloud/snapshot-backup"
+            ]
+          },
+          {
+            "group": "Enterprise",
+            "pages": [
+              "enterprise/getting-started",
+              "enterprise/partner-program",
+              "enterprise/white-labeling",
+              "enterprise/sla-monitoring"
             ]
           }
         ]
