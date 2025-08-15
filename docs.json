@@ -21,6 +21,12 @@
             ]
           },
           {
+            "group": "Web Hosting",
+            "pages": [
+              "web/index"
+            ]
+          },
+          {
             "group": "Minecraft",
             "pages": [
               "minecraft/start-server"
