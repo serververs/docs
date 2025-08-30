@@ -17,14 +17,19 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "quickstart",
-              "overview"
+              "quickstart"
             ]
           },
           {
             "group": "Minecraft",
             "pages": [
               "minecraft/start-server"
+            ]
+          },
+          {
+            "group": "Web Hosting",
+            "pages": [
+              "web/index"
             ]
           }
         ]
