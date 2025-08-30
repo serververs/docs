@@ -17,13 +17,8 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "quickstart"
-            ]
-          },
-          {
-            "group": "Web Hosting",
-            "pages": [
-              "web/index"
+              "quickstart",
+              "overview"
             ]
           },
           {
