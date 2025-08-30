@@ -25,7 +25,7 @@ To ensure smooth delivery and proper authentication, you must configure the foll
 
 ### A Record
 
-- **Host:** ```mail```
+- **Host:** `mail`
 - **Value:** `Your Server’s IP address`
 - **TTL:** Default (usually 3600)
 
@@ -35,9 +35,9 @@ To ensure smooth delivery and proper authentication, you must configure the foll
 
 ### MX Rec<Tooltip tip="">ord</Tooltip>
 
-- **Host:** ```@```
-- **Value:** ```mail.yourdomain.com```
-- **Priority:** ```10```
+- **Host:** `@`
+- **Value:** `mail.yourdomain.com`
+- **Priority:** `10`
 - **TTL:** Default
 
 <Info>
@@ -49,8 +49,8 @@ To ensure smooth delivery and proper authentication, you must configure the foll
 SPF (Sender Policy Framework) prevents spammers from sending emails pretending to be you.
 
 - **Type:** TXT
-- **Host:** ```@```
-- **Value:**  ```v=spf1 a mx YOUR_SERVER_IP include:serververse.com ~all```
+- **Host:** `@`
+- **Value:**  `v=spf1 a mx YOUR_SERVER_IP include:serververse.com ~all`
 
 <Warning>
   Replace `YOUR_SERVER_IP` with your server’s IP.
@@ -65,7 +65,7 @@ DKIM (DomainKeys Identified Mail) signs your outgoing emails to verify authentic
 3. Add it as a DNS record:
 
 - **Type:** TXT
-- **Host:** ```default._domainkey```
+- **Host:** `default._domainkey`
 - **Value:** (Paste the DKIM key copied)
 
 ### DMARC Record
@@ -138,6 +138,6 @@ To ensure everything is working correctly:
 
 By following this guide, your domain’s email will be fully functional with Serververse, authenticated against spam, and professional for personal or business communication.
 
-<Card title="Discord" icon="discord" href="https://discord.gg/pXmG5CuveT" cta="Join Now">
-  Join Our Discord for Fastes Support & Explore the Discussion which will help you to resolve your query
+<Card title="Discord" icon="discord" href="https://discord.gg/pXmG5CuveT">
+  Join Our Discord for Fastest Support & Explore the Discussion which will help you to resolve your query
 </Card>
