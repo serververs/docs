@@ -7,7 +7,7 @@
     "light": "#ffa632",
     "dark": "#ffa632"
   },
-  "favicon": "https://serververs.com/assets/images/3-bg-removed.ico",
+  "favicon": "favicon.ico",
   "navigation": {
     "tabs": [
       {
