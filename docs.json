@@ -33,13 +33,6 @@
             ]
           },
           {
-            "tab": "Web Services",
-            "icon": "web",
-            "pages": [
-              "web/index"
-            ]
-          },
-          {
             "group": "VPS Hosting",
             "pages": [
               "vps/index"
