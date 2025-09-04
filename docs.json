@@ -21,19 +21,19 @@
             ]
           },
           {
-            "dropdown": "Minecraft",
+            "group": "Minecraft",
             "pages": [
               "minecraft/start-server"
             ]
           },
           {
-            "dropdown": "Web Hosting",
+            "group": "Web Hosting",
             "pages": [
               "web/index"
             ]
           },
           {
-            "dropdown": "VPS Hosting",
+            "group": "VPS Hosting",
             "pages": [
               "vps/index"
             ]
