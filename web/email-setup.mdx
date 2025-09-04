@@ -96,18 +96,21 @@ Each mailbox can be managed inside your Serververse dashboard.
 
 To send and receive emails through applications like Outlook, Apple Mail, or Gmail, use the following configuration:
 
-### Incoming Mail (IMAP/POP3)
+<Tabs>
+  <Tab title="Incoming Mail (IMAP/POP3)"icon="inbox">
 
-- **IMAP Host:** `mail.yourdomain.com`
-- **IMAP Port:** `993` (SSL/TLS)
-- **POP3 Host:** `mail.yourdomain.com`
-- **POP3 Port:** `995` (SSL/TLS)
+  **IMAP Host:** `mail.yourdomain.com`
+  **IMAP Port:** `993` (SSL/TLS)
+  **POP3 Host:** `mail.yourdomain.com`
+  **POP3 Port:** `995` (SSL/TLS)
+  </Tab>
+  <Tab title="Outgoing Mail (SMTP)" icon="outbox">
 
-### Outgoing Mail (SMTP)
-
-- **SMTP Host:** `mail.yourdomain.com`
-- **SMTP Port:** `465` (SSL/TLS) or `587` (STARTTLS)
-- **Authentication:** Required (use full email address and password)
+  **SMTP Host:** `mail.yourdomain.com`
+  **SMTP Port:** `465` (SSL/TLS) or `587` (STARTTLS)
+  **Authentication:** Required (use full email address and password)
+  </Tab>
+</Tabs>
 
 <Warning>
   You won't shown `mail.` prefix in your email server at panel. So Add `mail.` prefix manually while configuring your email client.
@@ -116,6 +119,18 @@ To send and receive emails through applications like Outlook, Apple Mail, or Gma
 ## 5. Sending Email via Webmail
 
 Serververse also provides Webmail access where you can log in using your email address and password directly in your browser. This is useful if you don't want to configure an email client.
+
+<Steps>
+  <Step title="First Step">
+    Go to `https://serververs.com/panel` or access it via your Serververse panel.
+  </Step>
+  <Step title="Second Step">
+    Navigate to the Email section.
+  </Step>
+  <Step title="Third Step">
+    Click on the Access Email link for your mailbox.
+  </Step>
+</Steps>
 
 ## 6. Testing Email Deliverability
 
