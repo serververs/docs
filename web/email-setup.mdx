@@ -26,11 +26,11 @@ To ensure smooth delivery and proper authentication, you must configure the foll
 ### A Record
 
 - **Host:** `mail`
-- **Value:** `Your Server’s IP address`
+- **Value:** `Your Server's IP address`
 - **TTL:** Default (usually 3600)
 
 <Info>
-  (If your website is hosted on the same server, you don’t need a new A record. The existing one will suffice.)
+  (If your website is hosted on the same server, you don't need a new A record. The existing one will suffice.)
 </Info>
 
 ### MX Rec<Tooltip tip="">ord</Tooltip>
@@ -53,7 +53,7 @@ SPF (Sender Policy Framework) prevents spammers from sending emails pretending t
 - **Value:**  `v=spf1 a mx YOUR_SERVER_IP include:serververs.com ~all`
 
 <Warning>
-  Replace `YOUR_SERVER_IP` with your server’s IP.
+  Replace `YOUR_SERVER_IP` with your server's IP.
 </Warning>
 
 ### DKIM Record
@@ -109,9 +109,13 @@ To send and receive emails through applications like Outlook, Apple Mail, or Gma
 - **SMTP Port:** `465` (SSL/TLS) or `587` (STARTTLS)
 - **Authentication:** Required (use full email address and password)
 
+<Warning>
+  You won't shown `mail.` prefix in your email server at panel. So Add `mail.` prefix manually while configuring your email client.
+</Warning>
+
 ## 5. Sending Email via Webmail
 
-Serververse also provides Webmail access where you can log in using your email address and password directly in your browser. This is useful if you don’t want to configure an email client.
+Serververse also provides Webmail access where you can log in using your email address and password directly in your browser. This is useful if you don't want to configure an email client.
 
 ## 6. Testing Email Deliverability
 
@@ -136,7 +140,7 @@ To ensure everything is working correctly:
 
 ## Conclusion
 
-By following this guide, your domain’s email will be fully functional with Serververse, authenticated against spam, and professional for personal or business communication.
+By following this guide, your domain's email will be fully functional with Serververse, authenticated against spam, and professional for personal or business communication.
 
 <Card title="Discord" icon="discord" href="https://discord.gg/pXmG5CuveT">
   Join Our Discord for Fastest Support & Explore the Discussion which will help you to resolve your query

@@ -31,6 +31,12 @@
             "pages": [
               "web/index"
             ]
+          },
+          {
+            "group": "VPS Hosting",
+            "pages": [
+              "vps/index"
+            ]
           }
         ]
       }
