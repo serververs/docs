@@ -23,11 +23,18 @@
           {
             "group": "Minecraft",
             "pages": [
-              "minecraft/start-server"
+              "minecraft/start"
             ]
           },
           {
             "group": "Web Hosting",
+            "pages": [
+              "web/index"
+            ]
+          },
+          {
+            "tab": "Web Services",
+            "icon": "web",
             "pages": [
               "web/index"
             ]
