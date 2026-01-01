@@ -63,8 +63,7 @@
   },
   "logo": {
     "light": "https://serververs.com/assets/images/3-bg-removed.ico",
-    "dark": "https://serververs.com/assets/images/3-bg-removed.ico",
-    "href": "https://serververs.com/assets/images/3-bg-removed.ico"
+    "dark": "https://serververs.com/assets/images/3-bg-removed.ico"
   },
   "navbar": {
     "links": [
