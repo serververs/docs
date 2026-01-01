@@ -33,9 +33,9 @@
             ]
           },
           {
-            "group": "VPS Hosting",
+            "group": "Cloud",
             "pages": [
-              "vps/index"
+              "cloud/index"
             ]
           }
         ]
