@@ -63,7 +63,8 @@
   },
   "logo": {
     "light": "https://serververs.com/assets/images/3-bg-removed.ico",
-    "dark": "https://serververs.com/assets/images/3-bg-removed.ico"
+    "dark": "https://serververs.com/assets/images/3-bg-removed.ico",
+    "href": "https://serververs.com/assets/images/3-bg-removed.ico"
   },
   "navbar": {
     "links": [
@@ -82,7 +83,30 @@
     "socials": {
       "x": "https://x.com/serververs",
       "github": "https://github.com/serververs",
-      "linkedin": "https://linkedin.com/company/serververse"
+      "linkedin": "https://linkedin.com/company/serververse",
+      "discord": "https://discord.gg/serververse",
+      "website": "https://serververs.com",
+      "instagram": "https://instagram.com/serververs",
+      "medium": "https://medium.com/@serververse",
+      "reddit": "https://www.reddit.com/r/Serververse/",
+      "hacker-news": "https://news.ycombinator.com/user?id=serververse",
+      "youtube": "https://www.youtube.com/@serververse",
+      "facebook": "https://www.facebook.com/profile.php?id=61558230523697"
+    }
+  },
+  "description": "Any Problem Occured?, Here's your Solution @ Serververse",
+  "background": {
+    "decoration": "gradient"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "styling": {
+    "latex": true
+  },
+  "api": {
+    "playground": {
+      "display": "interactive"
     }
   }
 }
