@@ -1,0 +1,115 @@
+---
+title: "WireGuard Tunneling"
+description: "Set up secure tunneling using WireGuard with full manual control."
+---
+
+# WireGuard Tunneling
+
+WireGuard is a high-performance VPN that provides encrypted tunneling with minimal overhead and full configuration control.
+
+It is suitable for advanced users who want self-managed tunnels.
+
+## When to Use WireGuard
+
+Use WireGuard if:
+
+- You want full self-hosted control
+- You prefer static keys
+- Configure your own VPN
+- You do not want external dependencies
+- You manage multi-node infrastructure
+
+## Install WireGuard
+
+On both servers:
+
+```
+apt update
+apt install wireguard -y
+```
+
+## Generate Keys
+
+On each server:
+
+```
+wg genkey | tee private.key | wg pubkey > public.key
+```
+
+Store keys securely.
+
+## WireGuard Configuration
+
+Create config:
+
+```
+nano /etc/wireguard/wg0.conf
+```
+
+Example:
+
+```
+[Interface]
+Address = 10.0.0.1/24
+PrivateKey = <PRIVATE_KEY>
+ListenPort = 51820
+
+[Peer]
+PublicKey = <PEER_PUBLIC_KEY>
+AllowedIPs = 10.0.0.2/32
+Endpoint = <PEER_PUBLIC_IP>:51820
+PersistentKeepalive = 25
+```
+
+## Enable IP Forwarding
+
+```
+sysctl -w net.ipv4.ip_forward=1
+```
+
+## NAT Configuration
+
+```
+iptables -t nat -A POSTROUTING -j MASQUERADE
+```
+
+## Start WireGuard
+
+```
+wg-quick up wg0
+systemctl enable wg-quick@wg0
+```
+
+## Verify Tunnel
+
+```
+wg show
+```
+
+## Security Best Practices
+
+- Use firewall rules
+- Rotate keys periodically
+- Limit AllowedIPs strictly
+- Monitor traffic
+
+## Comparison with Both Tunnels
+
+<Columns cols={2}>
+  <Card title="Tailscale" icon="plane-tail" iconType="duotone" color="#ffa632">
+    - Easier setup
+    - Automatic management
+  </Card>
+  <Card title="WireGuard" icon="staff-snake" iconType="duotone" color="#ffa632">
+    - Manual control
+    - Fully self-hosted
+  </Card>
+</Columns>
+
+## Next Steps
+
+WireGuard tunnels can be extended for:
+
+- Multi-region routing
+- Site-to-site VPNs
+- Private service meshes

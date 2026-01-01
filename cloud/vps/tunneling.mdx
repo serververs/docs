@@ -1,0 +1,70 @@
+---
+title: "Tunneling"
+description: "Securely connect servers using private tunnels with Tailscale or WireGuard."
+---
+
+# Tunneling
+
+Tunneling allows you to securely route traffic between servers over encrypted private networks instead of exposing services directly to the public internet.
+
+This is commonly used when:
+
+- Backend servers do not have public IPs
+- Creating VPN Mesh
+- You want to hide internal infrastructure
+- You need encrypted server-to-server communication
+- A proxy VPS forwards traffic to private nodes
+
+## Supported Tunneling Methods
+
+Serververse supports multiple tunneling approaches depending on your needs.
+
+Choose the method that fits your use case:
+
+<CardGroup>
+  <Card title="Tailscale" icon="plane-tail" iconType="duotone" color="#ffa632" href="/cloud/vps/tunneling/tailscale">
+    Tailscale is a zero-config mesh VPN built on WireGuard.
+
+    Best if you want:
+
+    - Fast setup
+    - Automatic key management
+    - NAT traversal
+    - Minimal manual configuration
+  </Card>
+  <Card title="WireGuard" icon="staff-snake" iconType="duotone" color="#ffa632" href="/cloud/vps/tunneling/wireguard">
+    WireGuard is a lightweight, high-performance VPN with full manual control.
+
+    Best if you want:
+
+    - Full self-hosted control
+    - Static keys and configs
+    - No external dependencies
+  </Card>
+</CardGroup>
+
+## Typical Architecture
+
+<Steps>
+  <Step title="Receives traffic on public IP" iconType="duotone" stepNumber={1} titleSize="p">
+    
+  </Step>
+  <Step title="Forwards traffic via tunnel" iconType="duotone" stepNumber={2} titleSize="p">
+    
+  </Step>
+  <Step title="Private Backend VPS / LXC" iconType="duotone" stepNumber={3} titleSize="p">
+    
+  </Step>
+</Steps>
+
+## When Not to Use Tunneling
+
+Tunneling is not required if:
+
+- Your backend already has a public IP
+- You do not need encrypted internal traffic
+- You want the simplest possible setup
+
+## Next Steps
+
+Choose a tunneling method above to continue with a step-by-step setup guide.

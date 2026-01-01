@@ -1,0 +1,128 @@
+---
+title: "Tailscale Tunneling"
+description: "Set up secure tunneling using Tailscale for private networking and traffic forwarding."
+---
+
+# Tailscale Tunneling
+
+Tailscale is the recommended tunneling method for most users due to its simplicity and reliability.
+
+It creates a private encrypted network between servers using WireGuard under the hood, without complex configuration.
+
+## When to Use Tailscale
+
+Use Tailscale if:
+
+- You want fast and simple setup
+- You are using private backend VPS or LXC containers
+- You need NAT traversal
+- You do not want to manage keys manually
+
+## Allow TUN Device (LXC Only)
+
+If Tailscale is used inside an LXC container, you must allow the TUN device.
+
+Edit the LXC config:
+
+Path: `/etc/pve/lxc/<LXC_ID>.conf`
+
+Add the line at last:
+
+```
+lxc.cgroup2.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+```
+
+<Note>
+  Restart the container after saving.
+</Note>
+
+## Enable IP Forwarding (Proxy VPS)
+
+On the public proxy VPS:
+
+Edit sysctl config: \
+`nano /etc/sysctl.conf`
+
+Ensure this line exists & uncommented: \
+`net.ipv4.ip_forward = 1`
+
+Apply to check IP Forwarding is Active: \
+`sysctl -p`
+
+## IPTables Forwarding Rules
+
+Forward traffic from the public VPS to the private Tailscale IP.
+
+Create a File called `ip.sh` using: `nano ip.sh`
+
+and Add This:
+
+```
+iptables -t nat -A POSTROUTING -j MASQUERADE
+iptables -t nat -A PREROUTING -p tcp -j DNAT --to-destination <TAILSCALE_IP>
+iptables -t nat -A PREROUTING -p udp -j DNAT --to-destination <TAILSCALE_IP>
+```
+
+<Note>
+  Replace `<TAILSCALE_IP>` with the backend server’s 100.x.x.x address.
+</Note>
+
+Then Do: `bash ip.sh`
+
+**To make the forwarding active.**
+
+<Warning>
+  if Your Proxy VPS restarts, then you need to again run the `bash ip.sh` command to make the tunnel active.
+</Warning>
+
+## DNS Fix for LXC
+
+Inside the LXC container: `touch /etc/.pve-ignore.resolv.conf`
+
+Set DNS: `echo -e "nameserver 8.8.8.8\nnameserver 1.1.1.1" > /etc/resolv.conf`
+
+## Automated Tailscale Setup Script
+
+Save as `tailscale-tunnel.sh`:
+
+```
+#!/bin/bash
+
+if ! command -v tailscale >/dev/null 2>&1; then
+curl -fsSL https://tailscale.com/install.sh
+ | sh
+fi
+
+read -rp "Have you already run tailscale up? (yes/no): " READY
+
+if [ "$READY" = "no" ]; then
+read -rp "Enter full tailscale up command: " CMD
+sudo bash -c "$CMD"
+fi
+
+read -rp "Public VPS IP: " PUBLIC_IP
+read -rp "Backend Tailscale IP: " INTERNAL_IP
+
+sysctl -w net.ipv4.ip_forward=1
+
+iptables -t nat -A PREROUTING -d "$PUBLIC_IP" -p tcp -j DNAT --to "$INTERNAL_IP"
+iptables -t nat -A PREROUTING -d "$PUBLIC_IP" -p udp -j DNAT --to "$INTERNAL_IP"
+iptables -t nat -A POSTROUTING -j MASQUERADE
+
+tailscale up --accept-routes
+```
+
+## Security Notes
+
+- Restrict forwarded ports where possible
+- Do not expose unused services
+- Monitor tunnel traffic regularly
+
+<Danger>
+  Use this Script at your own Risk.
+</Danger>
+
+## Next
+
+If you need full manual control, move to the WireGuard guide.
