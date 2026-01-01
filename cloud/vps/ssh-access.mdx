@@ -9,8 +9,6 @@ SSH (Secure Shell) allows you to remotely connect to your VPS and manage it secu
 
 This guide explains how to connect from different operating systems and apply basic security practices.
 
----
-
 ## Requirements
 
 Before connecting, make sure you have:
@@ -19,8 +17,6 @@ Before connecting, make sure you have:
 - A username (usually `root`)
 - The VPS password or an SSH private key
 - An SSH client on your device
-
----
 
 ## Connecting from Linux or macOS
 
@@ -32,12 +28,9 @@ Open a terminal and run:
 ssh root@YOUR_VPS_IP
 ```
 
-If this is your first time connecting, you will be asked to confirm the server fingerprint.
-Type `yes` and press Enter.
+If this is your first time connecting, you will be asked to confirm the server fingerprint. Type `yes` and press Enter.
 
 Enter your password when prompted.
-
----
 
 ## Connecting from Windows
 
@@ -53,8 +46,6 @@ ssh root@YOUR_VPS_IP
 
 Enter your password when prompted.
 
----
-
 ### Using PuTTY
 
 1. Open PuTTY.
@@ -63,8 +54,6 @@ Enter your password when prompted.
 4. Ensure the connection type is set to **SSH**.
 5. Click **Open**.
 6. Log in using your username and password.
-
----
 
 ## Using SSH Key Authentication (Recommended)
 
@@ -77,8 +66,6 @@ ssh-keygen -t ed25519
 ```
 
 Press Enter to accept the default file location and settings.
-
----
 
 ### Add the Public Key to Your VPS
 
@@ -99,8 +86,6 @@ chmod 600 ~/.ssh/authorized_keys
 ```
 
 Log out and reconnect to verify key-based login works.
-
----
 
 ## Disable Password Authentication (Optional but Recommended)
 
@@ -126,37 +111,24 @@ systemctl restart ssh
 
 This prevents password-based logins and improves security.
 
----
-
 ## Common SSH Issues
 
-* **Connection refused**
-  SSH service may not be running or port 22 is blocked by a firewall.
-
-* **Permission denied**
-  Incorrect username, password, or SSH key permissions.
-
-* **Connection timed out**
-  Incorrect IP address or network-level firewall restrictions.
-
----
+- **Connection refused** SSH service may not be running or port 22 is blocked by a firewall.
+- **Permission denied** Incorrect username, password, or SSH key permissions.
+- **Connection timed out** Incorrect IP address or network-level firewall restrictions.
 
 ## Security Best Practices
 
-* Use SSH keys instead of passwords
-* Keep your system updated
-* Restrict SSH access using firewalls
-* Avoid exposing unnecessary services to the public internet
-
----
+- Use SSH keys instead of passwords
+- Keep your system updated
+- Restrict SSH access using firewalls
+- Avoid exposing unnecessary services to the public internet
 
 ## What to Do Next
 
 After connecting successfully, you can:
 
-* Install required software and services
-* Configure firewalls and security rules
-* Set up backups and monitoring
-* Prepare the VPS for production workloads
-
-```
+- Install required software and services
+- Configure firewalls and security rules
+- Set up backups and monitoring
+- Prepare the VPS for production workloads
