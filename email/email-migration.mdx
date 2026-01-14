@@ -44,14 +44,35 @@ imapsync --host1 [SOURCE_IMAP] --user1 [SOURCE_EMAIL] --pass1 '[SOURCE_PASS]' --
 
 To migrate multiple accounts simultaneously, create a credentials file named `users.txt`:
 
-**`File Format (users.txt):`** \
+```bash
+nano users.txt
+```
+
+#### File Format (users.txt):
+
 `source_user|source_pass|dest_user|dest_pass`
+
+**Example:**
+
+```bash
+me1@gmail.com|me1@pass|you1@serververs.com|you1@pass
+me2@gmail.com|me2@pass|you2@serververs.com|you2@pass
+me3@gmail.com|me3@pass|you3@serververs.com|you3@pass
+me4@gmail.com|me4@pass|you4@serververs.com|you4@pass
+me5@gmail.com|me5@pass|you5@serververs.com|you5@pass
+```
+
+and so on.
 
 **Run the Batch Command:**
 
 ```bash
 imapsync --host1 [SOURCE_IMAP] --host2 [DEST_IMAP] --ssl1 --ssl2 --usersfile users.txt
 ```
+
+<Warning>
+  Note: Host for all users should be same with **source **& **destination**
+</Warning>
 
 ## Method 2: Web-Based Interface (Limited)
 
@@ -88,5 +109,3 @@ Imapsync is **idempotent**. If a 20GB migration times out, simply run the comman
 ### 3. Folder Mapping
 
 If system folders like "Sent" or "Trash" have different names on the old server, Imapsync will recreate them on the new server. You can later map these in your email client (e.g., Thunderbird or Outlook).
-
-**Final Action:** Once migration is verified, update your **MX Records** to point to Serververse to begin routing new mail to your new server.
