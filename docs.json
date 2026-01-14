@@ -27,9 +27,10 @@
             ]
           },
           {
-            "group": "Web Hosting",
+            "group": "Web",
             "pages": [
-              "web/index"
+              "web/index",
+              "email/index"
             ]
           },
           {
