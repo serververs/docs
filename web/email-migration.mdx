@@ -1,0 +1,92 @@
+---
+title: "Email Migration Guide"
+description: "Professional strategies for single and bulk email migrations to Serververse using Imapsync."
+---
+
+Migrating email data is a critical operation during server transitions. To ensure 100% data integrity, preservation of folder structures, and "read/unread" status synchronization, we utilize **Imapsync**. This guide provides instructions for both individual mailbox transfers and automated bulk migrations.
+
+## Prerequisites
+
+Before initiating any migration, the following environment setup is mandatory:
+
+1. **Target Configuration:** You must fully set up the destination mailbox on Serververse before migrating. This includes:
+   - Creating the email account in your control panel (e.g., `user@example.com`).
+   - Ensuring the domain is active and mail services are initialized.
+2. **IMAP Credentials:** Obtain the IMAP hostnames and login details for both source and destination servers.
+3. **Password Security:** \* **Gmail/Outlook:** You must generate a 16-character **App Password**. Standard passwords will be rejected.
+   - **Password Differentiation:** For clarity and security, it is highly recommended to use different passwords for the source and destination mailboxes.
+
+<Warning>
+  **Terminal Syntax:** Always enclose passwords in single quotes `'your_password'`. Special characters (e.g., `@`, `!`, `$`) can interfere with command execution if not properly quoted.
+</Warning>
+
+## Method 1: Terminal Migration (Unlimited & Recommended)
+
+The Command Line Interface (CMD) method is the professional standard. Unlike web tools, it allows for **unlimited data transfer**, supports background execution, and provides detailed logging.
+
+### 1. Install Imapsync
+
+On your Serververse Linux VPS (Debian/Ubuntu), install the utility:
+
+```bash
+sudo apt update && sudo apt install imapsync -y
+```
+
+### 2. Single Mailbox Migration
+
+Execute the following command for an individual account transfer:
+
+```bash
+imapsync --host1 [SOURCE_IMAP] --user1 [SOURCE_EMAIL] --pass1 '[SOURCE_PASS]' --host2 [DEST_IMAP] --user2 [DEST_EMAIL] --pass2 '[DEST_PASS]' --ssl1 --ssl2
+```
+
+### 3. Bulk/Multiple Mailbox Migration
+
+To migrate multiple accounts simultaneously, create a credentials file named `users.txt`:
+
+**`File Format (users.txt):`** \
+`source_user|source_pass|dest_user|dest_pass`
+
+**Run the Batch Command:**
+
+```bash
+imapsync --host1 [SOURCE_IMAP] --host2 [DEST_IMAP] --ssl1 --ssl2 --usersfile users.txt
+```
+
+## Method 2: Web-Based Interface (Limited)
+
+The UI method is suitable for non-technical users or small mailboxes. However, it is **strictly limited** by browser timeouts and often caps transfers at 3 GB.
+
+<Card title="IMAP Sync Online" icon="mailbox" iconType="duotone" color="#ffa632" href="https://imapsync.lamiral.info/X/">
+  Use the web interface for quick, small migrations (Max 3 GB recommended).
+</Card>
+
+1. **Source (Host 1):** Enter the old provider's IMAP server and credentials.
+2. **Destination (Host 2):** Enter your Serververse IMAP details (typically `mail.yourdomain.com`).
+3. **Sync:** Click **Sync**. You must keep the browser tab open until the process reaches "Finished."
+
+## Provider Configuration Reference
+
+| Provider                 | IMAP Host (Host1)       | Requirements                               |
+| ------------------------ | ----------------------- | ------------------------------------------ |
+| **Gmail / Workspace**    | `imap.gmail.com`        | Use App Password + Enable IMAP in Settings |
+| **Outlook / Office 365** | `outlook.office365.com` | Use App Password                           |
+| **Hostinger**            | `imap.hostinger.com`    | Standard Password                          |
+| **Serververse**          | `mail.yourdomain.com`   | Standard Password                          |
+
+## Troubleshooting
+
+### 1. Authentication Failures
+
+- **Username Sync:** Some servers require the full email as a username, while others require only the prefix.
+- **Identity Refresh:** If the login fails on Serververse, re-save the mailbox password in the control panel to force-refresh the authentication database.
+
+### 2. Large Mailboxes & Resumptions
+
+Imapsync is **idempotent**. If a 20GB migration times out, simply run the command again. The tool will compare both servers and only transfer the missing emails, ensuring no duplicates are created.
+
+### 3. Folder Mapping
+
+If system folders like "Sent" or "Trash" have different names on the old server, Imapsync will recreate them on the new server. You can later map these in your email client (e.g., Thunderbird or Outlook).
+
+**Final Action:** Once migration is verified, update your **MX Records** to point to Serververse to begin routing new mail to your new server.
