@@ -1,4 +1,56 @@
 ---
-title: 'Begin'
+title: "IP Transit"
+description: "Understand and deploy Serververse™ Network Transit."
 ---
 
+Serververse™ Network Transit allows you to attach **public IPs** to your server through a distributed routing layer.
+
+Instead of relying on your local ISP or NAT, your traffic is routed through Serververse infrastructure, enabling **direct public exposure, better control, and scalable networking**.
+
+---
+
+## How It Works
+
+1. You run the installer on your server
+2. A secure tunnel configuration is created
+3. Serververse provisions your tunnel on its network
+4. Your server receives a **routable public IP**
+
+---
+
+## Traffic Flow
+
+```text
+Internet
+   ↓
+Serververse Edge Network
+   ↓
+Secure Transit Tunnel
+   ↓
+Your Server (with Public IP)
+```
+
+---
+
+## What You Get
+
+- Public IP on any server (even behind NAT)
+- Secure and controlled routing
+- Fully automated provisioning
+- Works with VPS, bare metal, or homelabs
+
+## Where to Go Next
+
+Continue with detailed setup:
+
+<Card title="Tunneling Setup" color="#ffa632" icon="train-tunnel" href="/labs/ip-transit/tunnelng">
+  Get Started your Tunneling Setup
+</Card>
+
+---
+
+## Notes
+
+- Ensure **backup access (IPMI / VNC / Console)** before setup
+- Incorrect routing may temporarily affect SSH access
+- Designed for users familiar with Linux networking

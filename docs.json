@@ -38,6 +38,12 @@
             "pages": [
               "cloud/index"
             ]
+          },
+          {
+            "group": "Labs",
+            "pages": [
+              "labs/begin"
+            ]
           }
         ]
       }
