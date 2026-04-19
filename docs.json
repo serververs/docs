@@ -9,6 +9,20 @@
   },
   "favicon": "favicon.ico",
   "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Discord",
+          "icon": "discord",
+          "href": "https://discord.gg/pXmG5CuveT"
+        },
+        {
+          "anchor": "Updates at X",
+          "icon": "x-twitter",
+          "href": "https://x.com/serververs"
+        }
+      ]
+    },
     "tabs": [
       {
         "tab": "Guides",
@@ -47,26 +61,7 @@
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Hub",
-          "href": "https://hub.serververs.com",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Discord",
-          "href": "https://discord.gg/pXmG5CuveT",
-          "icon": "discord"
-        },
-        {
-          "anchor": "Updates at X",
-          "href": "https://x.com/serververs",
-          "icon": "x-twitter"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "https://serververs.com/assets/images/3-bg-removed.ico",

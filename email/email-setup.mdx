@@ -5,92 +5,100 @@ description: "Learn how to configure your domain’s email system with Serverver
 
 # Email Setup Guide
 
-This guide will walk you through setting up and managing email for your domain with Serververse. We’ll cover everything — from configuring DNS records, creating mailboxes, enabling SMTP, and ensuring reliable delivery for both personal and professional use cases.
+## Overview
 
-## 1. Understanding How Email Works with Your Domain
+This guide explains how to set up email for your domain using Serververse.
 
-When you set up email for your domain, three main parts are involved:
+Once configured, you will be able to:
 
-1. **DNS Records** – These tell the internet where your email services are hosted and how they should be validated.
-2. **Mailboxes** – These are the actual email accounts you create (e.g., `you@yourdomain.com`).
-3. **SMTP/IMAP/POP3** – Protocols that let you send and receive mail using clients like Outlook, Gmail, or Thunderbird.
+- send and receive emails
+- use apps like Gmail, Outlook, Apple Mail, or Thunderbird
+- benefit from automatic setup in supported clients
 
-<Tip>
-  If your domain is already pointed to Serververse hosting, you do **not need to create an extra A record for email**. The existing web host record is enough.
-</Tip>
+---
 
-## 2. DNS Records Required
+# 1. How Email Works
 
-To ensure smooth delivery and proper authentication, you must configure the following DNS records for your domain:
+Your email setup includes three parts:
 
-### A Record
+### DNS Records
 
-- **Host:** `mail`
-- **Value:** `Your Server's IP address`
-- **TTL:** Default (usually 3600)
+Tell the internet where your email is hosted
 
-<Info>
-  (If your website is hosted on the same server, you don't need a new A record. The existing one will suffice.)
-</Info>
+### Mailboxes
 
-### MX Rec<Tooltip tip="">ord</Tooltip>
+Your actual email accounts Example:
 
-- **Host:** `@`
-- **Value:** `mail.yourdomain.com`
-- **Priority:** `10`
-- **TTL:** Default
+```text
+info@yourdomain.com
+support@yourdomain.com
+```
 
-<Info>
-  This tells other mail servers where to deliver incoming emails for your domain.
-</Info>
+### Mail Servers
 
-### SPF Record
+Used by apps to send and receive email
 
-SPF (Sender Policy Framework) prevents spammers from sending emails pretending to be you.
+Serververse uses a **central mail server**:
 
-- **Type:** TXT
-- **Host:** `@`
-- **Value:**  `v=spf1 a mx ip4:YOUR_SERVER_IP include:yourdomain.com ~all`
+```text
+mail.serververs.com
+```
 
-<Warning>
-  Replace `YOUR_SERVER_IP` with your server's IP.
-</Warning>
+# 2. Required DNS Records
 
-### DKIM Record
+Add these records in your domain’s DNS panel.
 
-DKIM (DomainKeys Identified Mail) signs your outgoing emails to verify authenticity.
+## MX Record
 
-1. Go to your **DKIM Manager** inside your Serververse panel & Find Your Location's Web Panel.
-2. \*\*Copy the DKIM key provided for your domain & remove all \*\*`"`**Double Quote Symbols.**
-3. Add it as a DNS record:
+```text
+Type: MX
+Host: @
+Value: mail.serververs.com
+Priority: 10
+```
 
-- **Type:** TXT
-- **Host:** `default._domainkey`
-- **Value:** (Paste the DKIM key copied)
+## SPF Record
 
-### DMARC Record
+```text
+Type: TXT
+Host: @
+Value: v=spf1 ip4:YOUR_SERVER_IP ~all
+```
 
-DMARC adds another security layer by specifying how mail receivers should handle unauthenticated messages.
+Replace `YOUR_SERVER_IP` with your server IP.
 
-- **Type:** TXT
-- **Host:** `_dmarc`
-- **Value:**  `v=DMARC1; p=none; rua=mailto:postmaster@YOUR_DOMAIN`
+## DKIM Record
 
-You can adjust the `p=` policy:
+1. Open your Serververse panel
+2. Go to DKIM Manager
+3. Copy your DKIM key
+4. Add:
 
-- `none` → Just monitor
-- `quarantine` → Suspicious mail goes to spam
-- `reject` → Block unauthenticated mail completely
+```text
+Type: TXT
+Host: default._domainkey
+Value: (your DKIM key)
+```
 
-## 3. Creating Mailboxes
+## DMARC Record
 
-Once DNS is set up, create mailboxes for your team or personal use.\
+```text
+Type: TXT
+Host: _dmarc
+Value: v=DMARC1; p=none; rua=mailto:postmaster@yourdomain.com
+```
+
+# 3. Create Your Mailbox
+
+Inside your panel, create your email accounts.
+
 Examples:
 
-- Personal → `me@yourdomain.com`
-- Work → `info@yourdomain.com`, `support@yourdomain.com`, `sales@yourdomain.com`
-
-Each mailbox can be managed inside your Serververse dashboard.
+```text
+info@yourdomain.com
+sales@yourdomain.com
+support@yourdomain.com
+```
 
 ## 4. SMTP & IMAP Configuration
 
@@ -98,70 +106,104 @@ To send and receive emails through applications like Outlook, Apple Mail, or Gma
 
 <Tabs>
   <Tab title="Incoming Mail (IMAP/POP)">
-    **IMAP Host:** `mail.yourdomain.com`\\
-
-    **IMAP Port:** `993` (SSL/TLS)\\
-
-    OR\\
-
-    **POP Host:** `mail.yourdomain.com`\\
-
+    **IMAP Host:** `mail.serververs.com` \
+    **IMAP Port:** `993` (SSL/TLS)\
+    OR\
+    **POP Host:** `mail.serververs.com` \
     **POP Port:** `995` (SSL/TLS)
   </Tab>
   <Tab title="Outgoing Mail (SMTP)">
-    **SMTP Host:** `mail.yourdomain.com`\\
-
-    **SMTP Port:** `465` (SSL/TLS) or `587` (STARTTLS)\\
-
-    **Authentication:** Required (use full email address and password)
+    **SMTP Host:** `mail.serververs.com` \
+    **SMTP Port:** `465` (SSL/TLS) or `587` (STARTTLS)
   </Tab>
 </Tabs>
 
-<Warning>
-  You won't shown `mail.` prefix in your email server at panel. So Add `mail.` prefix manually while configuring your email client.
-</Warning>
+# 5. Autodiscover Email Config (Recommended)
 
-## 5. Sending Email via Webmail
+Most modern email apps can configure everything automatically.\
+You only need:
 
-Serververse also provides Webmail access where you can log in using your email address and password directly in your browser. This is useful if you don't want to configure an email client.
+```text
+Email address
+Password
+```
 
-<Steps>
-  <Step title="First Step">
-    Go to `https://serververs.com/panel` or access it via your Serververse panel.
-  </Step>
-  <Step title="Second Step">
-    Navigate to the Email section.
-  </Step>
-  <Step title="Third Step">
-    Click on the Access Email link for your mailbox.
-  </Step>
-</Steps>
+## To enable automatic setup
 
-## 6. Testing Email Deliverability
+Add these DNS records:
 
-To ensure everything is working correctly:
+```text
+autodiscover  CNAME  autodiscover.serververs.com
+autoconfig    CNAME  autoconfig.serververs.com
+```
 
-1. Send an email to https://www.mail-tester.com.
-2. Verify SPF, DKIM, and DMARC are passing.
-3. Ensure your score is close to **10/10** for maximum deliverability.
+## Supported Apps
 
-## 7. Best Practices for Professional Email
+- Outlook
+- Apple Mail
+- Thunderbird
+- Most Android mail apps
 
-- Always use **SPF, DKIM, and DMARC**.
-- Do not send bulk email directly; use professional services if needed.
-- Keep your DNS records updated if you migrate servers.
-- Use a dedicated mailbox for each role (support, billing, sales).
+## What happens automatically
 
-## 8. Troubleshooting Common Issues
+Your device will automatically receive:
 
-- **Emails going to Spam** → Check if SPF/DKIM/DMARC are properly set.
-- **Cannot connect to mailbox** → Verify SSL ports and credentials.
-- **Bounce backs with authentication error** → Ensure SMTP authentication is enabled.
+- correct server settings
+- secure ports
+- encryption configuration
 
-## Conclusion
+No manual setup required.
 
-By following this guide, your domain's email will be fully functional with Serververse, authenticated against spam, and professional for personal or business communication.
+# 6. Webmail Access
 
-<Card title="Discord" icon="discord" href="https://discord.gg/pXmG5CuveT">
-  Join Our Discord for Fastest Support & Explore the Discussion which will help you to resolve your query
+You can access your email from your browser:
+
+<Card title="SnappyMail" color="#ffa632" icon="mailbox" href="https://de.web.serververs.com/snappymail/">
+  Access, Manage & Customize your Mailbox from SnappyMail.
 </Card>
+
+# 7. Testing Your Email
+
+To verify everything is working:
+
+1. Visit: [https://www.mail-tester.com](https://www.mail-tester.com)
+2. Send a test email
+3. Check your score (aim for 10/10)
+
+# 8. Common Issues
+
+### Emails going to spam
+
+Check SPF, DKIM, and DMARC records
+
+### Cannot connect to mailbox
+
+Verify:
+
+- server name
+- ports
+- password
+
+### SSL or connection warnings
+
+Make sure you are using:
+
+```text
+mail.serververs.com
+```
+
+# 9. Best Practices
+
+- Use separate mailboxes for different roles
+- Keep DNS records updated
+- Avoid sending bulk emails from your main mailbox
+- Always use secure ports (993 / 465 / 587)
+
+# Summary
+
+Your email system is now:
+
+- securely configured
+- fully authenticated
+- compatible with all major email clients
+- capable of automatic setup
