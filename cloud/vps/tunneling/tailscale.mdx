@@ -3,8 +3,6 @@ title: "Tailscale Tunneling"
 description: "Set up secure tunneling using Tailscale for private networking and traffic forwarding."
 ---
 
-# Tailscale Tunneling
-
 Tailscale is the recommended tunneling method for most users due to its simplicity and reliability.
 
 It creates a private encrypted network between servers using WireGuard under the hood, without complex configuration.
@@ -28,7 +26,7 @@ Path: `/etc/pve/lxc/<LXC_ID>.conf`
 
 Add the line at last:
 
-```
+```text
 lxc.cgroup2.devices.allow: c 10:200 rwm
 lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
 ```
@@ -58,7 +56,7 @@ Create a File called `ip.sh` using: `nano ip.sh`
 
 and Add This:
 
-```
+```text
 iptables -t nat -A POSTROUTING -j MASQUERADE
 iptables -t nat -A PREROUTING -p tcp -j DNAT --to-destination <TAILSCALE_IP>
 iptables -t nat -A PREROUTING -p udp -j DNAT --to-destination <TAILSCALE_IP>
@@ -86,7 +84,7 @@ Set DNS: `echo -e "nameserver 8.8.8.8\nnameserver 1.1.1.1" > /etc/resolv.conf`
 
 Save as `tailscale-tunnel.sh`:
 
-```
+```text
 #!/bin/bash
 
 if ! command -v tailscale >/dev/null 2>&1; then

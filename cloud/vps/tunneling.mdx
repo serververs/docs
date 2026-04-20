@@ -3,8 +3,6 @@ title: "Tunneling"
 description: "Securely connect servers using private tunnels with Tailscale or WireGuard."
 ---
 
-# Tunneling
-
 Tunneling allows you to securely route traffic between servers over encrypted private networks instead of exposing services directly to the public internet.
 
 This is commonly used when:
@@ -22,7 +20,7 @@ Serververse supports multiple tunneling approaches depending on your needs.
 Choose the method that fits your use case:
 
 <CardGroup>
-  <Card title="Tailscale" icon="plane-tail" iconType="duotone" color="#ffa632" href="/cloud/vps/tunneling/tailscale">
+  <Card title="Tailscale" color="#ffa632" icon="plane-tail" iconType="duotone" href="/cloud/vps/tunneling/tailscale">
     Tailscale is a zero-config mesh VPN built on WireGuard.
 
     Best if you want:
@@ -32,7 +30,8 @@ Choose the method that fits your use case:
     - NAT traversal
     - Minimal manual configuration
   </Card>
-  <Card title="WireGuard" icon="staff-snake" iconType="duotone" color="#ffa632" href="/cloud/vps/tunneling/wireguard">
+
+  <Card title="WireGuard" color="#ffa632" icon="staff-snake" iconType="duotone" href="/cloud/vps/tunneling/wireguard">
     WireGuard is a lightweight, high-performance VPN with full manual control.
 
     Best if you want:
@@ -47,13 +46,10 @@ Choose the method that fits your use case:
 
 <Steps>
   <Step title="Receives traffic on public IP" iconType="duotone" stepNumber={1} titleSize="p">
-    
   </Step>
   <Step title="Forwards traffic via tunnel" iconType="duotone" stepNumber={2} titleSize="p">
-    
   </Step>
   <Step title="Private Backend VPS / LXC" iconType="duotone" stepNumber={3} titleSize="p">
-    
   </Step>
 </Steps>
 

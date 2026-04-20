@@ -3,8 +3,6 @@ title: "WireGuard Tunneling"
 description: "Set up secure tunneling using WireGuard with full manual control."
 ---
 
-# WireGuard Tunneling
-
 WireGuard is a high-performance VPN that provides encrypted tunneling with minimal overhead and full configuration control.
 
 It is suitable for advanced users who want self-managed tunnels.
@@ -23,7 +21,7 @@ Use WireGuard if:
 
 On both servers:
 
-```
+```text
 apt update
 apt install wireguard -y
 ```
@@ -32,7 +30,7 @@ apt install wireguard -y
 
 On each server:
 
-```
+```text
 wg genkey | tee private.key | wg pubkey > public.key
 ```
 
@@ -42,13 +40,13 @@ Store keys securely.
 
 Create config:
 
-```
+```text
 nano /etc/wireguard/wg0.conf
 ```
 
 Example:
 
-```
+```text
 [Interface]
 Address = 10.0.0.1/24
 PrivateKey = <PRIVATE_KEY>
@@ -63,26 +61,26 @@ PersistentKeepalive = 25
 
 ## Enable IP Forwarding
 
-```
+```text
 sysctl -w net.ipv4.ip_forward=1
 ```
 
 ## NAT Configuration
 
-```
+```text
 iptables -t nat -A POSTROUTING -j MASQUERADE
 ```
 
 ## Start WireGuard
 
-```
+```text
 wg-quick up wg0
 systemctl enable wg-quick@wg0
 ```
 
 ## Verify Tunnel
 
-```
+```text
 wg show
 ```
 
@@ -96,11 +94,12 @@ wg show
 ## Comparison with Both Tunnels
 
 <Columns cols={2}>
-  <Card title="Tailscale" icon="plane-tail" iconType="duotone" color="#ffa632">
+  <Card title="Tailscale" color="#ffa632" icon="plane-tail" iconType="duotone">
     - Easier setup
     - Automatic management
   </Card>
-  <Card title="WireGuard" icon="staff-snake" iconType="duotone" color="#ffa632">
+
+  <Card title="WireGuard" color="#ffa632" icon="staff-snake" iconType="duotone">
     - Manual control
     - Fully self-hosted
   </Card>
