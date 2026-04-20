@@ -71,29 +71,29 @@ imapsync --host1 [SOURCE_IMAP] --host2 [DEST_IMAP] --ssl1 --ssl2 --usersfile use
 ```
 
 <Warning>
-  Note: Host for all users should be same with **source **& **destination**
+  Note: Host for all users should be same with \*\*source \*\*& **destination**
 </Warning>
 
 ## Method 2: Web-Based Interface (Limited)
 
 The UI method is suitable for non-technical users or small mailboxes. However, it is **strictly limited** by browser timeouts and often caps transfers at 3 GB.
 
-<Card title="IMAP Sync Online" icon="mailbox" iconType="duotone" color="#ffa632" href="https://imapsync.lamiral.info/X/">
+<Card title="IMAP Sync Online" color="#ffa632" icon="mailbox" iconType="duotone" href="https://imapsync.lamiral.info/X/">
   Use the web interface for quick, small migrations (Max 3 GB recommended).
 </Card>
 
 1. **Source (Host 1):** Enter the old provider's IMAP server and credentials.
-2. **Destination (Host 2):** Enter your Serververse IMAP details (typically `mail.yourdomain.com`).
+2. **Destination (Host 2):** Enter your Serververse IMAP details (typically `mail.serverers.com`).
 3. **Sync:** Click **Sync**. You must keep the browser tab open until the process reaches "Finished."
 
 ## Provider Configuration Reference
 
-| Provider                 | IMAP Host (Host1)       | Requirements                               |
-| ------------------------ | ----------------------- | ------------------------------------------ |
-| **Gmail / Workspace**    | `imap.gmail.com`        | Use App Password + Enable IMAP in Settings |
-| **Outlook / Office 365** | `outlook.office365.com` | Use App Password                           |
-| **Hostinger**            | `imap.hostinger.com`    | Standard Password                          |
-| **Serververse**          | `mail.yourdomain.com`   | Standard Password                          |
+| Provider | IMAP Host (Host1) | Requirements |
+| --- | --- | --- |
+| **Gmail / Workspace** | `imap.gmail.com` | Use App Password \+ Enable IMAP in Settings |
+| **Outlook / Office 365** | `outlook.office365.com` | Use App Password |
+| **Hostinger** | `imap.hostinger.com` | Standard Password |
+| **Serververse** | `mail.serververs.com` | Standard Password |
 
 ## Troubleshooting
 
