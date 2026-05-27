@@ -1,87 +1,119 @@
 ---
-title: "Tunneling"
-description: "Configure and manage transit tunnels in Serververse™ Network Transit."
+title: "Tunneling Setup For Cloud providers"
+description: "Step-by-step guide to deploying a Serververse™ Network Transit tunnel on your cloud provider server."
 ---
 
-Serververse™ Network Transit uses tunneling to securely route traffic between your server and the Serververse edge network.
-
-## Architecture Overview
-
-```mermaid placement="top-right"
-graph TD
-    A[Internet] --> B[Serververse Edge]
-    B --> C[Transit Tunnel]
-    C --> D[Your Server]
-```
-
-<Tabs>
-  <Tab title="WireGuard">
-    ## WireGuard Setup
-
-    WireGuard is the current transport layer used for establishing secure tunnels.
-
-    <Steps>
-      <Step title="Run Installer">
-        Run the installer on your server:
-
-        ```bash
-        bash <(curl -fsSL https://transit.serververs.com/transit.sh)
-        ```
-      </Step>
-      <Step title="Generate Configuration">
-        The script will:
-
-        - Install required packages
-        - Generate keys
-        - Create tunnel configuration
-      </Step>
-      <Step title="Submit Public Key">
-        After installation, copy your **Client Public Key** and send it to the Serververse™ Support Team.
-      </Step>
-      <Step title="Wait for Provisioning">
-        The Serververse network will configure your tunnel and attach your public IP.
-      </Step>
-      <Step title="Start Tunnel">
-        Once confirmed, start your tunnel:
-
-        ```bash
-        wg-quick up wg0 && systemctl enable wg-quick@wg0
-        ```
-      </Step>
-    </Steps>
-
-    ### Verification
-
-    Check if the tunnel is active:
-
-    ```bash
-    wg show
-    ip a
-    ```
-  </Tab>
-  <Tab title="GRE (Coming Soon)">
-    ## GRE Tunneling
-
-    GRE (Generic Routing Encapsulation) support is currently under development.
-
-    ### For Whom?
-
-    - GRE-based tunnels will allow **lower overhead routing**
-    - Designed for advanced networking setups
-    - Ideal for high-performance and custom routing use cases
-
-    ### Coming Soon
-
-    GRE support will include:
-
-    - Automated configuration
-    - Multi-IP routing
-    - Advanced control over traffic flow
-  </Tab>
-</Tabs>
+This guide walks you through setting up a **Serververse™ Network Transit** tunnel on your Linux server. As of **v0.2**, provisioning is token-based — your install command is generated from the dashboard and contains everything needed to configure and bring up the tunnel automatically.
 
 <Warning>
-  Always ensure **backup access (IPMI / VNC / Console)** before configuring tunnels\
-  Incorrect setup may temporarily disrupt SSH connectivity\
-  Do not start the tunnel before provisioning is completed
+  Ensure you have **out-of-band access (IPMI, VNC, or console)** before proceeding. Misconfigured routing may temporarily break SSH access to your server.
 </Warning>
+
+---
+
+## Prerequisites
+
+- A Linux server (VPS, bare metal, container, or homelab)
+- Root or `sudo` access
+- `curl` or `wget` installed
+- A Serververse account with Network Transit access
+
+---
+
+## Step 1 — Get Your Install Command
+
+1. Log in to the [Serververse Labs Dashboard](https://labs.serververs.com)
+
+<Frame >
+  <img src="/labs/images/labs-login.png" alt="Serververse Labs Login" />
+</Frame>
+
+2. Navigate to **Network Transit**
+
+<Frame >
+  <img src="/labs/images/labs-overview.png" alt="Labs Overview page" />
+</Frame>
+
+3. In the **Peers** table, locate your peer row and click the **eye icon** in the last column to reveal your install command
+
+<Frame >
+  <img src="/labs/images/labs-peers-row.png" alt="Peers table row with eye button to reveal install command" />
+</Frame>
+
+
+4. Your Command will be generated as follows :-
+
+  <img src="/labs/images/labs-transit-dialog.png" alt="Peers table row with eye button to reveal install command" />
+
+<Note>
+  Your install command is unique to your account and transit IP. Do not share it publicly.
+</Note>
+
+---
+
+## Step 2 — Run the Installer
+
+SSH into your server and paste the install command from the dashboard. It will look something like:
+
+<CodeGroup>
+
+```bash curl
+bash <(curl -fsSL https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
+```
+
+```bash wget
+bash <(wget -qO- https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
+```
+
+</CodeGroup>
+
+The installer will:
+
+- Validate your provisioning token
+- Configure Transit based on your use case
+- Bring up the tunnel interface
+- Route your allocated public IP through the Serververse network
+
+---
+
+## Step 3 — Verify the Tunnel
+
+Once the installer completes, confirm the tunnel is active:
+
+```bash
+# Check the Transit interface is up
+ip link show sv-transit
+
+# Confirm your public IP is reachable
+curl -4 --interface <YOUR_ROUTED_IP> ip.me
+```
+
+Your server's public-facing IP should now match the transit IP shown in your dashboard.
+
+---
+
+## Managing Your Tunnel
+
+You can view all active transit IPs and their status from the **Serververse Dashboard** under **Network Transit → Your IPs**.
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="SSH dropped after running the installer">
+  This usually means a routing rule has overridden your default gateway. Use out-of-band access (IPMI/VNC/console) to correct the routing table, or restore from a snapshot if available.
+</Accordion>
+
+<Accordion title="Public IP is not reachable externally">
+  Wait 1–2 minutes for edge provisioning to propagate. If the issue persists, check that the Transit interface is up (`ip link show sv-transit`) and the lookback interface should have the correct ip assigned (`ip link show lo`). Verify your token is valid in the dashboard.
+</Accordion>
+
+</AccordionGroup>
+
+---
+
+## What's Next
+
+- A dedicated CLI tool (`svt`) is on the roadmap for terminal-native management

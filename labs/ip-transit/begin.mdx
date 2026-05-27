@@ -1,31 +1,38 @@
 ---
 title: "IP Transit"
-description: "Understand and deploy Serververse™ Network Transit."
+description: "Attach routable public IPs to any Linux server through the Serververse™ Network Transit."
 ---
 
-Serververse™ Network Transit allows you to attach **public IPs** to your server through a distributed routing layer.
+Serververse™ Network Transit is a production-grade IP transit system designed for **developers, homelab operators, and infrastructure engineers**. It lets you attach a routable public IP to any Linux-based server — even behind NAT — through an automated provisioning workflow.
 
-Instead of relying on your local ISP or NAT, your traffic is routed through Serververse infrastructure, enabling **direct public exposure, better control, and scalable networking**.
+Traffic is routed through the **Serververse edge network** over a secure WireGuard tunnel, giving your server direct public exposure without touching your local ISP or managing complex routing rules yourself.
+
+<Note>
+  Network Transit is currently in **beta**. Breaking changes may occur between minor versions.
+</Note>
 
 ---
 
 ## How It Works
 
-1. You run the installer on your server
-2. A secure tunnel configuration is created
-3. Serververse provisions your tunnel on its network
-4. Your server receives a **routable public IP**
-
----
-
-## Traffic Flow
+<Steps>
+  <Step title="Get your install command">
+    Log in to the [Serververse Dashboard](https://labs.serververs.com) and navigate to **Network Transit**. Your personalised install command — including your provisioning token — is generated for you.
+  </Step>
+  <Step title="Run it on your server">
+    Paste the command on your Linux server. The installer handles tunnel configuration and provisioning automatically.
+  </Step>
+  <Step title="You're live">
+    Serververse provisions your tunnel on the edge network and your server receives a routable public IP.
+  </Step>
+</Steps>
 
 ```text
 Internet
    ↓
 Serververse Edge Network
    ↓
-Secure Transit Tunnel
+WireGuard Transit Tunnel
    ↓
 Your Server (with Public IP)
 ```
@@ -34,23 +41,44 @@ Your Server (with Public IP)
 
 ## What You Get
 
-- Public IP on any server (even behind NAT)
-- Secure and controlled routing
-- Fully automated provisioning
-- Works with VPS, bare metal, or homelabs
+- Public IP on any server, including those behind NAT
+- Token-based provisioning — no manual key management
+- WireGuard tunneling, configured per your use case
+- Dashboard to view your transit IPs and retrieve your install command
+- Lightweight, dependency-minimal execution
+- Compatible with VPS, bare metal, containers, and homelabs
 
-## Where to Go Next
+---
 
-Continue with detailed setup:
+## Use Cases
 
-<Card title="Tunneling Setup" color="#ffa632" icon="train-tunnel" href="/labs/ip-transit/tunneling">
-  Get Started your Tunneling Setup
+- Exposing **homelab services** with a dedicated public IP
+- Hosting **game servers** (e.g. Minecraft) without ISP restrictions
+- **Failover and redundancy routing** across regions
+- Custom **cloud and hybrid infrastructure** networking
+- NAT bypass with a **static public IP assignment**
+- Advanced routing and lab experiments
+
+---
+
+## Next Steps
+
+<Card title="Tunneling Setup - For Cloud Providers" color="#ffa632" icon="train-tunnel" href="/labs/ip-transit/tunneling">
+For Cloud providers such as Microsoft Azure, Amazon Webservices, Oracle Cloud etc
+</Card>
+
+<Card title="Tunneling Setup - Hypervisors" color="#ffa632" icon="train-tunnel" href="/labs/ip-transit/tunneling-hypervisor">
+For Self Hosted Hypervisors such as Proxmox.
 </Card>
 
 ---
 
-## Notes
+## Operational Notes
 
-- Ensure **backup access (IPMI / VNC / Console)** before setup
-- Incorrect routing may temporarily affect SSH access
-- Designed for users familiar with Linux networking
+<Warning>
+  Always ensure **out-of-band access (IPMI, VNC, or console)** is available before running the installer. Incorrect routing may temporarily disrupt your SSH session.
+</Warning>
+
+- Intended for users familiar with **Linux networking concepts**
+- Underlying transport mechanisms may evolve across versions
+- By using this service you agree to the applicable [Terms of Service](https://serververs.com/tos) and [Privacy Policy](https://serververs.com/privacy)

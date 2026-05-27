@@ -1,0 +1,169 @@
+---
+title: "Tunneling Setup For Self-Hosted Hypervisors"
+description: "Step-by-step guide to deploying a Serververse™ Network Transit tunnel on a Proxmox VE self-hosted environment."
+---
+
+This guide walks you through setting up a **Serververse™ Network Transit** tunnel on a self-hosted hypervisor. This specific example demonstrates the setup using **Proxmox VE**, where we will create a NAT bridge on the host and route the tunnel to a virtual machine. 
+
+As of **v0.2**, provisioning is token-based — your install command is generated from the dashboard and contains everything needed to configure and bring up the tunnel automatically.
+
+<Warning>
+  Ensure you have **out-of-band access (IPMI, VNC, or console)** to your Proxmox host before proceeding. Misconfigured routing rules on the host network interfaces can lead to a loss of connectivity.
+</Warning>
+
+---
+
+## Prerequisites
+
+- A Proxmox VE host with root access
+- A Serververse account with Network Transit access
+- Basic familiarity with Proxmox VM creation and cloud-init
+
+---
+
+
+<Warning>
+  ### Panel Support
+  - The current version of Network Transit does not support using panel such as Virtfusion or Convoy Panel.
+  - However, there is workaround for it by creating ip pool for the **NAT SUBNET** in the panel but you still have to run the provisioning command.
+  - A new command can always be generated from the [Serververse Labs Dashboard](https://labs.serververs.com)
+</Warning>
+
+## Step 1 — Get Your Install Command
+
+1. Log in to the [Serververse Labs Dashboard](https://labs.serververs.com)
+
+<Frame>
+  <img src="/labs/images/labs-login.png" alt="Serververse Labs Login" />
+</Frame>
+
+2. Navigate to **Network Transit**
+
+<Frame>
+  <img src="/labs/images/labs-overview.png" alt="Labs Overview page" />
+</Frame>
+
+3. In the **Peers** table, locate your peer row and click the **eye icon** in the last column to reveal your install command.
+
+<Frame>
+  <img src="/labs/images/labs-peers-row.png" alt="Peers table row with eye button to reveal install command" />
+</Frame>
+
+4. Your Command will be generated as follows:
+
+<Frame>
+  <img src="/labs/images/labs-transit-dialog.png" alt="Transit dialog showing the install command" />
+</Frame>
+
+<Note>
+  Your install command is unique to your account and transit IP. Do not share it publicly. Keep this command handy for Step 5.
+</Note>
+
+---
+
+## Step 2 — Create a NAT Bridge on Proxmox
+
+To route traffic to your VM, you need to set up a NAT bridge on the Proxmox host. 
+
+First, determine your default network interface name. Run the following command on your Proxmox host:
+
+```bash
+ip -o -4 route show to default | awk '{print $5}'
+```
+
+*Note the output of this command (e.g., `vmbr0`, `eth0`, `eno1`). You will replace `<iface>` with this name in the configuration below.*
+
+Next, edit your network interfaces file:
+
+```bash
+nano /etc/network/interfaces
+```
+
+Add the following configuration at the very end of the file:
+
+```text
+auto br-transit
+iface br-transit inet static
+        address  10.45.45.1/24
+        bridge-ports none
+        bridge-stp off
+        bridge-fd 0
+
+        post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
+        post-up   iptables -t nat -A POSTROUTING -s '10.45.45.0/24' -o <iface> -j MASQUERADE
+        post-down iptables -t nat -D POSTROUTING -s '10.45.45.0/24' -o <iface> -j MASQUERADE
+```
+
+Save and exit the file, then apply the network configuration (or reboot the host).
+
+---
+
+## Step 3 — Provision the Virtual Machine
+
+1. Create a new VM in your Proxmox web interface.
+2. Under the **Hardware** settings for the VM, edit the Network Device (NIC) and assign it to the newly created **`br-transit`** bridge.
+3. In the **Cloud-Init** configuration for the VM, set the following parameters:
+* **IP Address:** `10.45.45.2/24`
+* **Gateway:** `10.45.45.1` *(Note: This must be the IP of the bridge we just created, not the VM's own IP).*
+* **User/Password:** Ensure you set a root password so we can SSH into the VM shortly.
+---
+
+## Step 4 — Boot and Connect
+
+1. Boot up the newly created VM in Proxmox.
+2. From your Proxmox host's terminal, SSH into the VM using the IP assigned via cloud-init:
+
+```bash
+ssh root@10.45.45.2
+```
+
+---
+
+## Step 5 — Run the Installer
+
+Now that you are inside the VM, paste the install command you generated from the Serververse dashboard in Step 1. It will look something like this:
+
+```bash curl
+bash <(curl -fsSL https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
+```
+
+```bash wget
+bash <(wget -qO- https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
+```
+
+The installer will:
+
+* Validate your provisioning token
+* Configure Transit based on your use case
+* Bring up the tunnel interface
+* Route your allocated public IP through the Serververse network
+---
+
+## Step 6 — Verify the Tunnel
+
+Once the installer completes, confirm the tunnel is active from inside the VM:
+
+```bash
+# Check the Transit interface is up
+ip link show sv-transit
+
+# Confirm your public IP is reachable
+curl -4 --interface <YOUR_ROUTED_IP> ip.me
+
+```
+
+
+Your VM's public-facing IP should now match the transit IP shown in your dashboard.
+
+---
+
+## Managing Your Tunnel
+
+You can view all active transit IPs and their status from the **Serververse Dashboard** under **Network Transit → Your IPs**.
+
+---
+
+## What's Next
+
+* A dedicated CLI tool (`svt`) is on the roadmap for terminal-native management.
+* Assignment of ips directly to the hypervisor and use control panel normally.
