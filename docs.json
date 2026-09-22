@@ -56,7 +56,8 @@
           {
             "group": "Labs",
             "pages": [
-              "labs/ip-transit/begin"
+              "labs/ip-transit/begin",
+              "shield"
             ]
           }
         ]
@@ -108,5 +109,8 @@
     "playground": {
       "display": "interactive"
     }
+  },
+  "seo": {
+    "indexing": "navigable"
   }
 }
