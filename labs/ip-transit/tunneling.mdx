@@ -1,119 +1,221 @@
 ---
-title: "Tunneling Setup For Cloud providers"
-description: "Step-by-step guide to deploying a Serververse™ Network Transit tunnel on your cloud provider server."
+title: "Tunneling setup for cloud providers"
+sidebarTitle: "Tunneling setup"
+description: "Deploy a Serververse™ Network Transit tunnel on your cloud server and route a real public IP to it."
+icon: "network-wired"
 ---
 
-This guide walks you through setting up a **Serververse™ Network Transit** tunnel on your Linux server. As of **v0.2**, provisioning is token-based — your install command is generated from the dashboard and contains everything needed to configure and bring up the tunnel automatically.
+**Serververse™ Network Transit** gives your Linux server a dedicated public IP routed through the Serververse network. Provisioning is token-based: the dashboard generates a single install command that configures and brings up the tunnel for you.
 
 <Warning>
-  Ensure you have **out-of-band access (IPMI, VNC, or console)** before proceeding. Misconfigured routing may temporarily break SSH access to your server.
+  Make sure you have **out-of-band access** (IPMI, VNC, or a provider console) before you start. A misconfigured route can temporarily cut off SSH.
 </Warning>
 
----
+## Before you begin
 
-## Prerequisites
+<CardGroup cols={2}>
+  <Card title="A Linux server" icon="server">
+    VPS, bare metal, container, or homelab machine.
+  </Card>
+  <Card title="Root access" icon="lock">
+    You'll need `root` or `sudo` on the server.
+  </Card>
+  <Card title="curl or wget" icon="terminal">
+    Used to download and run the installer.
+  </Card>
+  <Card title="Network Transit access" icon="user-check">
+    A Serververse account with a transit tunnel assigned.
+  </Card>
+</CardGroup>
 
-- A Linux server (VPS, bare metal, container, or homelab)
-- Root or `sudo` access
-- `curl` or `wget` installed
-- A Serververse account with Network Transit access
+## Set up your tunnel
 
----
+<Steps>
+  <Step title="Open your tunnel in the dashboard">
+    Sign in to the [Serververse Labs Dashboard](https://labs.serververs.com).
 
-## Step 1 — Get Your Install Command
+    <Frame>
+      <img src="/labs/images/labs-login.png" alt="Serververse Labs sign-in page" />
+    </Frame>
 
-1. Log in to the [Serververse Labs Dashboard](https://labs.serververs.com)
+    Go to **Network Transit**.
 
-<Frame >
-  <img src="/labs/images/labs-login.png" alt="Serververse Labs Login" />
-</Frame>
+    <Frame>
+      <img src="/labs/images/labs-overview.png" alt="Network Transit overview" />
+    </Frame>
 
-2. Navigate to **Network Transit**
+    Your assigned tunnel appears as a card. Click it to open the tunnel details.
 
-<Frame >
-  <img src="/labs/images/labs-overview.png" alt="Labs Overview page" />
-</Frame>
+    <Frame>
+      <img src="/labs/images/labs-peer.png" alt="Assigned tunnel card" />
+    </Frame>
+  </Step>
 
-3. In the **Peers** table, locate your peer row and click the **eye icon** in the last column to reveal your install command
+  <Step title="Copy your install command">
+    The details page shows your public IP, bandwidth usage, and transfer rate. Click **Generate command** to copy the install command to your clipboard.
 
-<Frame >
-  <img src="/labs/images/labs-peers-row.png" alt="Peers table row with eye button to reveal install command" />
-</Frame>
+    <Frame caption="Generate the command">
+      <img src="/labs/images/labs-copy-cmd.png" alt="Generate command button" />
+    </Frame>
 
+    <Frame caption="Command copied to clipboard">
+      <img src="/labs/images/labs-cmd-copied.png" alt="Command copied confirmation" />
+    </Frame>
 
-4. Your Command will be generated as follows :-
+    <Note>
+      The command is unique to your account and transit IP. Treat it like a password and don't share it publicly.
+    </Note>
+  </Step>
 
-  <img src="/labs/images/labs-transit-dialog.png" alt="Peers table row with eye button to reveal install command" />
+  <Step title="Run the installer">
+    SSH into your server and paste the command. It looks like this:
 
-<Note>
-  Your install command is unique to your account and transit IP. Do not share it publicly.
-</Note>
+    <CodeGroup>
+    ```bash curl
+    bash <(curl -fsSL https://labs-api.serververs.com/api/v0.3/provision/install.sh) --token <YOUR_TOKEN>
+    ```
 
----
+    ```bash wget
+    bash <(wget -qO- https://labs-api.serververs.com/api/v0.3/provision/install.sh) --token <YOUR_TOKEN>
+    ```
+    </CodeGroup>
 
-## Step 2 — Run the Installer
+    The installer:
 
-SSH into your server and paste the install command from the dashboard. It will look something like:
+    - Validates your provisioning token
+    - Configures Transit for your use case
+    - Brings up the `sv-transit` tunnel interface
+    - Routes your allocated public IP through the Serververse network
+    - Installs the [`sv-transit` CLI](#manage-your-tunnel)
+  </Step>
 
-<CodeGroup>
+  <Step title="Verify the tunnel">
+    Check that the interface is up:
 
-```bash curl
-bash <(curl -fsSL https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
-```
+    ```bash
+    ip link show sv-transit
+    ```
 
-```bash wget
-bash <(wget -qO- https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
-```
+    Then confirm traffic leaves through your routed IP:
 
-</CodeGroup>
+    ```bash
+    curl -4 --interface <YOUR_ROUTED_IP> ip.me
+    ```
 
-The installer will:
+    <Check>
+      The IP returned should match the transit IP shown in your dashboard.
+    </Check>
+  </Step>
+</Steps>
 
-- Validate your provisioning token
-- Configure Transit based on your use case
-- Bring up the tunnel interface
-- Route your allocated public IP through the Serververse network
+## Manage your tunnel
 
----
+Manage your tunnel from the **dashboard**, or directly on the server with the **`sv-transit` CLI**.
 
-## Step 3 — Verify the Tunnel
+<Tabs>
+  <Tab title="Dashboard">
+    View and manage all your tunnels in one place.
 
-Once the installer completes, confirm the tunnel is active:
+    <Steps>
+      <Step title="Sign in">
+        Open the [Serververse Labs Dashboard](https://labs.serververs.com).
+      </Step>
+      <Step title="Open Network Transit">
+        Go to **Network Transit**.
+      </Step>
+      <Step title="Select a tunnel">
+        Click a tunnel to see its public IP, connection status, and settings.
+      </Step>
+    </Steps>
+  </Tab>
 
-```bash
-# Check the Transit interface is up
-ip link show sv-transit
+  <Tab title="sv-transit CLI">
+    The installer adds `sv-transit` to your server automatically.
 
-# Confirm your public IP is reachable
-curl -4 --interface <YOUR_ROUTED_IP> ip.me
-```
+    <Note>
+      Every command except `version` needs root, so run them with `sudo`. Your provisioning token is the `--token` value in the install command from the dashboard.
+    </Note>
 
-Your server's public-facing IP should now match the transit IP shown in your dashboard.
+    | Command | What it does |
+    | --- | --- |
+    | `install` | Sets up the tunnel on this machine |
+    | `status` | Shows whether the tunnel is up and its last handshake |
+    | `migrate` | Replaces an older install with a fresh one |
+    | `uninstall` | Removes the tunnel (alias: `remove`) |
+    | `version` | Prints the CLI version |
 
----
+    ### Install
 
-## Managing Your Tunnel
+    ```bash
+    sudo sv-transit install --token <provisioning-token>
+    ```
 
-You can view all active transit IPs and their status from the **Serververse Dashboard** under **Network Transit → Your IPs**.
+    For scripted setups, add `--yes` to accept the Terms of Service without a prompt:
 
----
+    ```bash
+    sudo sv-transit install --token <provisioning-token> --yes
+    ```
+
+    <Tip>
+      `--yes` only skips the Terms of Service prompt. Safety warnings for `migrate` and `uninstall` are always shown.
+    </Tip>
+
+    ### Check status
+
+    ```bash
+    sudo sv-transit status
+    ```
+
+    ### Migrate from an older version
+
+    Stops **every** WireGuard tunnel on the machine, clears `/etc/wireguard`, and runs a fresh install with your token.
+
+    ```bash
+    sudo sv-transit migrate --token <provisioning-token>
+    ```
+
+    <Warning>
+      Migrate deletes **all** WireGuard configs in `/etc/wireguard`, not just Serververse ones. Back up any other tunnels first.
+
+      Don't run it over SSH through the transit IP, or you'll lose access mid-migration. Use the console or another IP.
+    </Warning>
+
+    ### Uninstall
+
+    ```bash
+    sudo sv-transit uninstall
+    ```
+
+    To also remove the `sv-transit` command:
+
+    ```bash
+    sudo sv-transit uninstall --purge
+    ```
+
+    <Warning>
+      Traffic to your public IP stops immediately. Don't run this over a connection that uses the transit IP.
+    </Warning>
+
+    ### Version
+
+    ```bash
+    sv-transit version
+    ```
+  </Tab>
+</Tabs>
 
 ## Troubleshooting
 
 <AccordionGroup>
+  <Accordion title="SSH dropped after running the installer" icon="plug-circle-xmark">
+    A routing rule has most likely overridden your default gateway. Connect through out-of-band access (IPMI, VNC, or console) and fix the routing table, or restore from a snapshot.
+  </Accordion>
 
-<Accordion title="SSH dropped after running the installer">
-  This usually means a routing rule has overridden your default gateway. Use out-of-band access (IPMI/VNC/console) to correct the routing table, or restore from a snapshot if available.
-</Accordion>
+  <Accordion title="Public IP isn't reachable externally" icon="globe">
+    Edge provisioning can take 1–2 minutes to propagate. If it still fails:
 
-<Accordion title="Public IP is not reachable externally">
-  Wait 1–2 minutes for edge provisioning to propagate. If the issue persists, check that the Transit interface is up (`ip link show sv-transit`) and the lookback interface should have the correct ip assigned (`ip link show lo`). Verify your token is valid in the dashboard.
-</Accordion>
-
+    1. Check the tunnel interface is up: `wg show`
+    2. Check the loopback interface has your transit IP: `ip addr show lo`
+    3. Confirm your tunnel is still active in the dashboard
+  </Accordion>
 </AccordionGroup>
-
----
-
-## What's Next
-
-- A dedicated CLI tool (`svt`) is on the roadmap for terminal-native management
