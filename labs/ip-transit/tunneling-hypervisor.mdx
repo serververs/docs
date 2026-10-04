@@ -1,169 +1,210 @@
 ---
-title: "Tunneling Setup For Self-Hosted Hypervisors"
-description: "Step-by-step guide to deploying a Serververse™ Network Transit tunnel on a Proxmox VE self-hosted environment."
+title: "Tunneling setup for self-hosted hypervisors"
+sidebarTitle: "Tunneling setup - Hypervisors"
+description: "Deploy a Serververse™ Network Transit tunnel on a Proxmox VE host and route a public subnet to your virtual machines."
+icon: "server"
 ---
 
-This guide walks you through setting up a **Serververse™ Network Transit** tunnel on a self-hosted hypervisor. This specific example demonstrates the setup using **Proxmox VE**, where we will create a NAT bridge on the host and route the tunnel to a virtual machine. 
+This guide sets up a **Serververse™ Network Transit** tunnel on a self-hosted hypervisor and routes a public subnet to your VMs. The example uses **Proxmox VE**: you create a bridge on the host, the installer attaches your routed subnet to it, and any VM on that bridge gets a public IP.
 
-As of **v0.2**, provisioning is token-based — your install command is generated from the dashboard and contains everything needed to configure and bring up the tunnel automatically.
+<Info>
+  As of **v0.3**, the install script automatically routes the subnet and assigns it to the Proxmox bridge. Follow every step below in order.
+</Info>
+
+<Info>
+This routed method is supported only if you have purchased a whole subnet with a minimum size of `/29`. Visit our store to place an order, or open a ticket on our Discord server for guidance.
+</Info>
 
 <Warning>
-  Ensure you have **out-of-band access (IPMI, VNC, or console)** to your Proxmox host before proceeding. Misconfigured routing rules on the host network interfaces can lead to a loss of connectivity.
+  Make sure you have **out-of-band access** (IPMI, VNC, or console) to the Proxmox host before you start. A misconfigured route on the host can cut off your connection.
 </Warning>
 
----
-
-## Prerequisites
-
-- A Proxmox VE host with root access
-- A Serververse account with Network Transit access
-- Basic familiarity with Proxmox VM creation and cloud-init
-
----
-
-
-<Warning>
-  ### Panel Support
-  - The current version of Network Transit does not support using panel such as Virtfusion or Convoy Panel.
-  - However, there is workaround for it by creating ip pool for the **NAT SUBNET** in the panel but you still have to run the provisioning command.
-  - A new command can always be generated from the [Serververse Labs Dashboard](https://labs.serververs.com)
-</Warning>
-
-## Step 1 — Get Your Install Command
-
-1. Log in to the [Serververse Labs Dashboard](https://labs.serververs.com)
-
-<Frame>
-  <img src="/labs/images/labs-login.png" alt="Serververse Labs Login" />
-</Frame>
-
-2. Navigate to **Network Transit**
-
-<Frame>
-  <img src="/labs/images/labs-overview.png" alt="Labs Overview page" />
-</Frame>
-
-3. In the **Peers** table, locate your peer row and click the **eye icon** in the last column to reveal your install command.
-
-<Frame>
-  <img src="/labs/images/labs-peers-row.png" alt="Peers table row with eye button to reveal install command" />
-</Frame>
-
-4. Your Command will be generated as follows:
-
-<Frame>
-  <img src="/labs/images/labs-transit-dialog.png" alt="Transit dialog showing the install command" />
-</Frame>
-
-<Note>
-  Your install command is unique to your account and transit IP. Do not share it publicly. Keep this command handy for Step 5.
-</Note>
-
----
-
-## Step 2 — Create a NAT Bridge on Proxmox
-
-To route traffic to your VM, you need to set up a NAT bridge on the Proxmox host. 
-
-First, determine your default network interface name. Run the following command on your Proxmox host:
-
-```bash
-ip -o -4 route show to default | awk '{print $5}'
-```
-
-*Note the output of this command (e.g., `vmbr0`, `eth0`, `eno1`). You will replace `<iface>` with this name in the configuration below.*
-
-Next, edit your network interfaces file:
-
-```bash
-nano /etc/network/interfaces
-```
-
-Add the following configuration at the very end of the file:
+## How it works
 
 ```text
-auto br-transit
-iface br-transit inet static
-        address  10.45.45.1/24
-        bridge-ports none
-        bridge-stp off
-        bridge-fd 0
-
-        post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
-        post-up   iptables -t nat -A POSTROUTING -s '10.45.45.0/24' -o <iface> -j MASQUERADE
-        post-down iptables -t nat -D POSTROUTING -s '10.45.45.0/24' -o <iface> -j MASQUERADE
+Internet
+   ↓
+Serververse Edge Network
+   ↓
+WireGuard Transit Tunnel (Proxmox host)
+   ↓
+br-transit bridge  (gateway = first usable IP of your subnet)
+   ↓
+Your VMs (public IPs from the subnet)
 ```
 
-Save and exit the file, then apply the network configuration (or reboot the host).
+## Before you begin
 
----
+<CardGroup cols={2}>
+  <Card title="Proxmox VE host" icon="server">
+    With `root` access to the host shell.
+  </Card>
+  <Card title="Network Transit subnet" icon="network-wired">
+    A Serververse account with a transit **subnet** assigned.
+  </Card>
+  <Card title="Out-of-band access" icon="life-ring">
+    IPMI, VNC or console access to the host.
+  </Card>
+  <Card title="Cloud-init basics" icon="cloud">
+    Familiarity with creating Proxmox VMs and cloud-init.
+  </Card>
+</CardGroup>
 
-## Step 3 — Provision the Virtual Machine
+## Set up your tunnel
 
-1. Create a new VM in your Proxmox web interface.
-2. Under the **Hardware** settings for the VM, edit the Network Device (NIC) and assign it to the newly created **`br-transit`** bridge.
-3. In the **Cloud-Init** configuration for the VM, set the following parameters:
-* **IP Address:** `10.45.45.2/24`
-* **Gateway:** `10.45.45.1` *(Note: This must be the IP of the bridge we just created, not the VM's own IP).*
-* **User/Password:** Ensure you set a root password so we can SSH into the VM shortly.
----
+<Steps>
+  <Step title="Create the transit bridge">
+    On the Proxmox host, edit the network configuration:
 
-## Step 4 — Boot and Connect
+    ```bash
+    nano /etc/network/interfaces
+    ```
 
-1. Boot up the newly created VM in Proxmox.
-2. From your Proxmox host's terminal, SSH into the VM using the IP assigned via cloud-init:
+    Add this to the **end** of the file:
+
+    ```text
+    auto br-transit
+    iface br-transit inet static
+            bridge-ports none
+            bridge-stp off
+            bridge-fd 0
+            mtu 1420
+            post-up echo 1 > /proc/sys/net/ipv4/ip_forward
+    ```
+
+    Save the file, then apply the configuration (or reboot the host):
+
+    ```bash
+    ifreload -a
+    ```
+
+    <Note>
+      `bridge-ports none` is intentional. The bridge only carries routed traffic from the tunnel, so it isn't attached to a physical NIC. The MTU of `1420` matches WireGuard overhead.
+    </Note>
+  </Step>
+
+  <Step title="Open your tunnel in the dashboard">
+    Sign in to the [Serververse Labs Dashboard](https://labs.serververs.com).
+
+    <Frame caption="Sign in to the dashboard">
+      <img src="/labs/images/ip-transit/dashboard-login.png" alt="Serververse Labs sign-in page" />
+    </Frame>
+
+    Go to **Tunnels**.
+
+    <Frame caption="Your tunnels">
+      <img src="/labs/images/ip-transit/dashboard-tunnels-list.png" alt="Network Transit tunnels list" />
+    </Frame>
+
+    Your assigned subnet tunnel appears as a card. Click it to open the details.
+
+    <Frame caption="Subnet tunnel card">
+      <img src="/labs/images/ip-transit/hypervisor-tunnel-card.png" alt="Assigned subnet tunnel card" />
+    </Frame>
+  </Step>
+
+  <Step title="Copy your install command">
+    Click **Generate command** to copy your install command to the clipboard.
+
+    <Frame caption="Generate the command">
+      <img src="/labs/images/ip-transit/hypervisor-generate-command.png" alt="Generate command button" />
+    </Frame>
+
+    <Frame caption="Command copied to clipboard">
+      <img src="/labs/images/ip-transit/hypervisor-command-copied.png" alt="Command copied confirmation" />
+    </Frame>
+
+    <Note>
+      The command is unique to your account and subnet. Treat it like a password and don't share it publicly.
+    </Note>
+  </Step>
+
+  <Step title="Run the installer on the Proxmox host">
+    Paste the command into the **host shell** (not inside a VM). When it finishes, the output looks like this:
+
+    <Frame caption="Installer output">
+      <img src="/labs/images/ip-transit/hypervisor-install-output.png" alt="Installer output for a subnet tunnel" />
+    </Frame>
+
+    Note the **bridge IP** (the gateway) and the **usable range** it prints. You'll need both for the VM.
+  </Step>
+
+  <Step title="Create the virtual machine">
+    1. Create a new VM in the Proxmox web interface.
+    2. Under **Hardware**, edit the network device and set the bridge to **`br-transit`**.
+    3. Under **Cloud-Init**, set:
+
+    | Setting | Value | Example |
+    | --- | --- | --- |
+    | **IP Address** | An IP from your subnet, with its prefix length | `91.226.56.10/29` |
+    | **Gateway** | The IP attached to the bridge, **not** the VM's own IP | `91.226.56.9` |
+    | **User / Password** | A root password so you can SSH in | |
+
+    <Warning>
+      The gateway must be the **bridge's** IP. Using the VM's own IP, or an address outside the subnet, leaves the VM without connectivity.
+    </Warning>
+  </Step>
+
+  <Step title="Verify the IP">
+    Start the VM, open its console or SSH in, and run:
+
+    ```bash
+    # Confirm the assigned IP and networking
+    curl ip.me
+    ip a
+    ```
+
+    <Frame caption="Expected result">
+      <img src="/labs/images/ip-transit/hypervisor-verify-curl.png" alt="curl output showing the routed public IP" />
+    </Frame>
+
+    <Check>
+      `curl ip.me` should return the IP you assigned to the VM, `ip a` should list it on the VM's network interface, and the VM should now be reachable over SSH from the internet.
+    </Check>
+  </Step>
+</Steps>
+
+## Adding more VMs
+
+Repeat the **Create the virtual machine** step for each VM: same `br-transit` bridge, same gateway, and a different unused IP from your subnet. Don't assign the network, broadcast, or gateway addresses to a VM.
+
+## Managing your tunnel
+
+View all your transit IPs, their status, and usage in the [dashboard](https://labs.serververs.com) under **Tunnels**. To check the tunnel from the host:
 
 ```bash
-ssh root@10.45.45.2
+sudo sv-transit status
 ```
 
----
+See the [`sv-transit` CLI reference](/labs/ip-transit/tunneling#manage-your-tunnel) for upgrade and removal commands.
 
-## Step 5 — Run the Installer
+<Warning>
+  Do not restart the host's networking while the WireGuard tunnel is online. This causes a routing overlap and shuts down WireGuard.
+</Warning>
+<Info>
+  If a networking restart is really needed, use out-of-band access (IPMI, VNC, or console) to the Proxmox host and shut down WireGuard first with `wg-quick down sv-transit`. Then restart the networking.
+  Once networking is back online, start WireGuard again with `wg-quick up sv-transit`.
+</Info>
 
-Now that you are inside the VM, paste the install command you generated from the Serververse dashboard in Step 1. It will look something like this:
+## Troubleshooting
 
-```bash curl
-bash <(curl -fsSL https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
-```
+<AccordionGroup>
+  <Accordion title="VM has no internet access" icon="plug-circle-xmark">
+    1. Check the VM's NIC is on `br-transit`.
+    2. Check the cloud-init gateway is the **bridge IP**: `ip addr show br-transit` on the host.
+    3. Check forwarding is on: `cat /proc/sys/net/ipv4/ip_forward` should print `1`.
+    4. Check the tunnel is up: `wg show`.
+  </Accordion>
 
-```bash wget
-bash <(wget -qO- https://api-labs.serververs.com/api/v1/provision/install.sh) --token <YOUR_TOKEN>
-```
+  <Accordion title="Tunnel is up but the IP isn't reachable externally" icon="globe">
+    Edge provisioning can take 1–2 minutes to propagate. If it still fails, confirm the tunnel shows as **Online** in the dashboard and that no firewall on the host or VM is blocking inbound traffic.
+  </Accordion>
 
-The installer will:
+  <Accordion title="Lost access to the host after the installer ran" icon="triangle-exclamation">
+    Connect through IPMI, VNC or the console and inspect the routing table with `ip route`. If needed, remove the tunnel with `sudo sv-transit uninstall` and contact us by opening a ticket on Discord.
+  </Accordion>
 
-* Validate your provisioning token
-* Configure Transit based on your use case
-* Bring up the tunnel interface
-* Route your allocated public IP through the Serververse network
----
-
-## Step 6 — Verify the Tunnel
-
-Once the installer completes, confirm the tunnel is active from inside the VM:
-
-```bash
-# Check the Transit interface is up
-ip link show sv-transit
-
-# Confirm your public IP is reachable
-curl -4 --interface <YOUR_ROUTED_IP> ip.me
-
-```
-
-
-Your VM's public-facing IP should now match the transit IP shown in your dashboard.
-
----
-
-## Managing Your Tunnel
-
-You can view all active transit IPs and their status from the **Serververse Dashboard** under **Network Transit → Your IPs**.
-
----
-
-## What's Next
-
-* A dedicated CLI tool (`svt`) is on the roadmap for terminal-native management.
-* Assignment of ips directly to the hypervisor and use control panel normally.
+  <Accordion title="VM networking lost after restarting the host networking" icon="triangle-exclamation">
+    Use VNC or the Proxmox CLI (for a container: `pct enter <ct-id>`, for a VM: `qm console <vm-id>`) and manually restart networking. If that doesn't help, restarting the VM usually resolves the issue. If it persists, contact us by opening a ticket on Discord.
+  </Accordion>
+</AccordionGroup>

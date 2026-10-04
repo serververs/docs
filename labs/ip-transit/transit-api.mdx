@@ -1,0 +1,396 @@
+---
+title: 'Customer API'
+description: 'Manage your account and tunnels from your own scripts — a premium feature your operator enables per account.'
+icon: 'code'
+---
+
+The Customer API lets you manage your Serververse Transit account from your own
+scripts instead of the dashboard — rename a tunnel, pull a fresh install
+command, read your account and tunnel details, all with a single API key.
+
+<Note>
+  This is a premium feature. Your operator has to enable **API access** on
+  your account before any of this works — if every request below returns a
+  401, that's the first thing to check.
+</Note>
+
+## Getting a key
+
+<Steps>
+  <Step title="Ask your operator to enable API access">
+    This is an account-level switch only an admin can flip. Until they do,
+    every endpoint on this page returns `401 Invalid or disabled API key`,
+    even with no key at all.
+  </Step>
+  <Step title="Generate a key from the dashboard">
+    Sign in, go to **Settings → API access**, and click **Generate API key**.
+    The raw key is shown exactly once — copy it immediately. Only a hash of
+    it is ever stored, so if you lose it, your only option is to rotate.
+  </Step>
+  <Step title="Choose a rotation policy">
+    **Constant** — the key never expires on its own; rotate it yourself
+    whenever you want. **Auto-expire** — pick a number of days, and the key
+    stops working after that window. You'll get a warning email a few days
+    before it lapses, and a final notice once it has. Either way, nothing is
+    ever silently swapped — a key that expires just stops authenticating
+    until you generate a new one.
+  </Step>
+</Steps>
+
+<Warning>
+  There is no endpoint to create or rotate a key — that's deliberate. Minting
+  a new secret is only ever done from the dashboard, where it can be shown to
+  you once and copied. Everything in this document is what you do *with* a
+  key, not how you get one.
+</Warning>
+
+## Base URL
+
+```
+https://labs-api.serververs.com/api/public/v0.3
+```
+
+## Authentication
+
+Send your key as a bearer token on every request:
+
+```bash
+curl https://labs-api.serververs.com/api/public/v0.3/me \
+  -H "Authorization: Bearer sv_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+A request with no `Authorization` header, a malformed one, a key that's wrong,
+revoked, or past its auto-expiry window, or an account with API access turned
+off — all of these return the same `401` with a generic message. It's
+deliberately vague: the response never confirms whether a key almost worked,
+only whether it did.
+
+```json 401
+{ "error": "Invalid or disabled API key" }
+```
+
+## Response format
+
+Every successful response is plain JSON — the specific shape differs per
+endpoint, documented below. Every error looks like this:
+
+```json
+{
+  "error": "Human-readable message",
+  "fields": { "name": "What's wrong with this specific field" }
+}
+```
+
+`fields` is only present on `422` validation errors, one entry per field that
+failed. Everything else (`401`, `403`, `404`, `409`, `429`, `500`) has just
+`error`.
+
+| Status | Meaning |
+| --- | --- |
+| `401` | Missing, invalid, expired, or revoked key — or API access is off |
+| `403` | A specific action isn't allowed right now (see individual endpoints) |
+| `404` | Not found — including a real tunnel that isn't yours. The API never confirms another account's data exists |
+| `409` | Conflict — e.g. a tunnel name already in use, or an email already taken |
+| `422` | Request body failed validation — see `fields` |
+| `429` | Rate limited |
+
+## Rate limits
+
+**120 requests per minute**, per key — not per IP, so a shared office network
+never gets punished for one script's traffic. Going over it returns:
+
+```json 429
+{ "error": "Too many requests — please slow down." }
+```
+
+Standard `RateLimit-*` response headers are included on every request so you
+can back off before you hit the limit.
+
+---
+
+## Account
+
+### Get your account
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer <your API key>`
+</ParamField>
+
+<ResponseField name="user" type="object">
+  <Expandable title="fields">
+    <ResponseField name="id" type="integer" />
+    <ResponseField name="name" type="string" />
+    <ResponseField name="email" type="string" />
+    <ResponseField name="company" type="string | null" />
+    <ResponseField name="role" type="string">`"client"` or `"admin"`</ResponseField>
+    <ResponseField name="hasPassword" type="boolean" />
+    <ResponseField name="googleLinked" type="boolean" />
+    <ResponseField name="apiAccess" type="boolean" />
+    <ResponseField name="status" type="string">`"active"` or `"suspended"`</ResponseField>
+    <ResponseField name="createdAt" type="string" />
+    <ResponseField name="lastLoginAt" type="string | null">The sign-in *before* this one.</ResponseField>
+    <ResponseField name="lastLoginIp" type="string | null" />
+    <ResponseField name="currentLoginAt" type="string | null" />
+    <ResponseField name="currentLoginIp" type="string | null" />
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl https://labs-api.serververs.com/api/public/v0.3/me \
+  -H "Authorization: Bearer sv_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "user": {
+    "id": 42,
+    "name": "Divyansh Chaudhary",
+    "email": "divyansh@serververs.com",
+    "company": "Chief Technology Officer",
+    "role": "admin",
+    "hasPassword": true,
+    "googleLinked": true,
+    "apiAccess": true,
+    "status": "active",
+    "createdAt": "2026-01-14T09:00:00.000Z",
+    "lastLoginAt": "2026-10-01T18:22:04.000Z",
+    "lastLoginIp": "203.0.113.4",
+    "currentLoginAt": "2026-10-02T08:01:11.000Z",
+    "currentLoginIp": "203.0.113.4"
+  }
+}
+```
+</ResponseExample>
+
+`GET /me`
+
+### Update your account
+
+Change your name, company, or email. Partial updates — send only the fields
+you're changing.
+
+<Warning>
+  Changing your email here does **not** require your password, since a script
+  has none to confirm. The old address is always notified by email when this
+  happens, which is what actually catches a stolen key in time — check your
+  inbox if you see that notice and didn't make the change.
+</Warning>
+
+<ParamField body="name" type="string">2–120 characters.</ParamField>
+<ParamField body="company" type="string">Up to 120 characters. Send an empty string to clear it.</ParamField>
+<ParamField body="email" type="string">Must not already be in use by another account.</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X PATCH https://labs-api.serververs.com/api/public/v0.3/me \
+  -H "Authorization: Bearer sv_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Ada Lovelace", "company": "Analytical Engines Ltd"}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{ "user": { "id": 42, "name": "Ada Lovelace", "...": "..." } }
+```
+```json 409
+{ "error": "That email is already in use", "fields": { "email": "Already in use" } }
+```
+</ResponseExample>
+
+`PATCH /me`
+
+---
+
+## Tunnels
+
+### List your tunnels
+
+Returns every tunnel you own. Nothing belonging to another account is ever
+included.
+
+<ResponseField name="tunnels" type="array">Array of tunnel objects — see below.</ResponseField>
+<ResponseField name="total" type="integer" />
+
+<RequestExample>
+```bash cURL
+curl https://labs-api.serververs.com/api/public/v0.3/tunnels \
+  -H "Authorization: Bearer sv_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "tunnels": [
+    {
+      "id": 101,
+      "label": "home-lab-01",
+      "status": "online",
+      "proto": "WireGuard",
+      "publicIp": "203.0.113.7",
+      "peerIp": "100.127.254.2",
+      "pop": "fra1",
+      "location": "Frankfurt, DE",
+      "rxMbps": 3.482,
+      "txMbps": 0.914,
+      "periodRxBytes": 128481022,
+      "periodTxBytes": 30221911,
+      "allocations": [{ "id": 9, "kind": "single_ip", "cidr": "203.0.113.7/32" }],
+      "expiresAt": "2026-11-01T00:00:00.000Z",
+      "daysRemaining": 30,
+      "validityStatus": "active",
+      "suspended": false
+    }
+  ],
+  "total": 1
+}
+```
+</ResponseExample>
+
+`GET /tunnels`
+
+### Get one tunnel
+
+<ParamField path="id" type="integer" required>The tunnel's ID.</ParamField>
+
+Same tunnel object shape as above, wrapped in `{ "tunnel": { ... } }`. Returns
+`404` for a tunnel that doesn't exist *or* belongs to another account — the
+two look identical on purpose.
+
+`GET /tunnels/:id`
+
+### Rename a tunnel
+
+Text-only change on the node — your keys, tunnel IP, and public address are
+untouched, and so is live traffic. The installed config on your device keeps
+working; nothing needs reinstalling.
+
+<ParamField body="name" type="string" required>
+  Letters, numbers, hyphens and underscores only. Names only have to be
+  unique on the same node — if another tunnel of yours already has this name,
+  you'll get a `409`.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X PATCH https://labs-api.serververs.com/api/public/v0.3/tunnels/101 \
+  -H "Authorization: Bearer sv_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "office-router"}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{ "tunnel": { "id": 101, "label": "office-router", "...": "..." } }
+```
+```json 409
+{ "error": "A tunnel named 'office-router' already exists on this node", "fields": { "name": "Already in use" } }
+```
+</ResponseExample>
+
+`PATCH /tunnels/:id`
+
+### Get an install command
+
+Mints a one-time token and returns the install command built around it.
+<Warning>The token is shown exactly once in this response — it's stored hashed server-side, so it can't be recovered afterwards, only reissued.</Warning>
+
+<ParamField body="ttlHours" type="integer" default="24">How long the token stays redeemable, 1–168 hours.</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://labs-api.serververs.com/api/public/v0.3/tunnels/101/install-token \
+  -H "Authorization: Bearer sv_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"ttlHours": 2}'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "token": "a1b2c3...",
+  "installCmd": "bash <(curl -fsSL https://labs-api.serververs.com/api/v0.3/provision/install.sh) --token a1b2c3...",
+  "removeCmd": "bash <(curl -fsSL https://labs-api.serververs.com/api/v0.3/provision/install.sh) --remove",
+  "expiresAt": "2026-10-02T12:00:00.000Z",
+  "ttlHours": 2,
+  "tunnelLabel": "office-router",
+  "warning": "This token is shown once and can only be redeemed once. Anyone holding it can install this tunnel."
+}
+```
+</ResponseExample>
+
+`POST /tunnels/:id/install-token`
+
+---
+
+## Addresses
+
+### List your routed addresses
+
+Every public address across every tunnel you own, flattened into one list.
+
+<RequestExample>
+```bash cURL
+curl https://labs-api.serververs.com/api/public/v0.3/addresses \
+  -H "Authorization: Bearer sv_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "allocations": [
+    {
+      "id": 9,
+      "address": "203.0.113.7/32",
+      "kind": "single_ip",
+      "status": "routed",
+      "tunnelId": 101,
+      "tunnelLabel": "office-router",
+      "pop": "fra1",
+      "location": "Frankfurt, DE",
+      "assignedAt": "2026-09-01T00:00:00.000Z"
+    }
+  ],
+  "total": 1,
+  "blocks": ["fra1"],
+  "block": "fra1"
+}
+```
+</ResponseExample>
+
+`status` is `"routed"` only while both the tunnel and its node are up —
+`"idle"` otherwise, meaning the address is reserved for you but not currently
+reachable.
+
+`GET /addresses`
+
+---
+
+## Key lifecycle, in brief
+
+Everything about *creating* a key happens in the dashboard, not here — but a
+few things are worth knowing about how a key behaves once you're using it:
+
+- **Rotating replaces the key immediately.** The old one stops authenticating
+  the instant the new one is generated — there's no overlap window, so
+  rotate during a maintenance moment, not mid-request.
+- **Revoking is instant too**, whether you do it from Settings or your
+  operator does it from their side.
+- **Turning off API access doesn't delete your key** — it just stops it from
+  authenticating. Turn access back on and the same key works again, no need
+  to regenerate.
+- **An auto-expiring key just stops working** once its window passes — it is
+  never silently replaced or emailed to you. You'll get a warning email
+  first, then a final one once it's lapsed.
+
+<Card title="Manage your key" icon="key" href="https://labs.serververs.com/">
+  Generate, rotate, change the rotation policy, or revoke your key from
+  **Settings → API access** in the dashboard.
+</Card>

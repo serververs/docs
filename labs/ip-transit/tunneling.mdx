@@ -34,20 +34,20 @@ icon: "network-wired"
   <Step title="Open your tunnel in the dashboard">
     Sign in to the [Serververse Labs Dashboard](https://labs.serververs.com).
 
-    <Frame>
-      <img src="/labs/images/labs-login.png" alt="Serververse Labs sign-in page" />
+    <Frame caption="Sign in to the dashboard">
+      <img src="/labs/images/ip-transit/dashboard-login.png" alt="Serververse Labs sign-in page" />
     </Frame>
 
-    Go to **Network Transit**.
+    Go to **Tunnels**.
 
-    <Frame>
-      <img src="/labs/images/labs-overview.png" alt="Network Transit overview" />
+    <Frame caption="Your tunnels">
+      <img src="/labs/images/ip-transit/dashboard-tunnels-list.png" alt="Network Transit tunnels list" />
     </Frame>
 
     Your assigned tunnel appears as a card. Click it to open the tunnel details.
 
-    <Frame>
-      <img src="/labs/images/labs-peer.png" alt="Assigned tunnel card" />
+    <Frame caption="Assigned tunnel card">
+      <img src="/labs/images/ip-transit/cloud-tunnel-card.png" alt="Assigned tunnel card" />
     </Frame>
   </Step>
 
@@ -55,11 +55,11 @@ icon: "network-wired"
     The details page shows your public IP, bandwidth usage, and transfer rate. Click **Generate command** to copy the install command to your clipboard.
 
     <Frame caption="Generate the command">
-      <img src="/labs/images/labs-copy-cmd.png" alt="Generate command button" />
+      <img src="/labs/images/ip-transit/cloud-generate-command.png" alt="Generate command button" />
     </Frame>
 
     <Frame caption="Command copied to clipboard">
-      <img src="/labs/images/labs-cmd-copied.png" alt="Command copied confirmation" />
+      <img src="/labs/images/ip-transit/cloud-command-copied.png" alt="Command copied confirmation" />
     </Frame>
 
     <Note>
@@ -105,6 +105,12 @@ icon: "network-wired"
     <Check>
       The IP returned should match the transit IP shown in your dashboard.
     </Check>
+
+    In the dashboard, the tunnel should show as **Online**, with a recent last handshake, your public IP, and live bandwidth.
+
+    <Frame caption="An online tunnel in the dashboard">
+      <img src="/labs/images/ip-transit/dashboard-tunnel-details.png" alt="Tunnel details page showing an online tunnel" />
+    </Frame>
   </Step>
 </Steps>
 
@@ -211,6 +217,10 @@ Manage your tunnel from the **dashboard**, or directly on the server with the **
     A routing rule has most likely overridden your default gateway. Connect through out-of-band access (IPMI, VNC, or console) and fix the routing table, or restore from a snapshot.
   </Accordion>
 
+  <Accordion title="Installer says the token is invalid or expired" icon="key">
+    Tokens are single-use and time-limited. Return to the tunnel in the dashboard, click **Generate command** again, and run the new command.
+  </Accordion>
+
   <Accordion title="Public IP isn't reachable externally" icon="globe">
     Edge provisioning can take 1–2 minutes to propagate. If it still fails:
 
@@ -219,3 +229,14 @@ Manage your tunnel from the **dashboard**, or directly on the server with the **
     3. Confirm your tunnel is still active in the dashboard
   </Accordion>
 </AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Hypervisor setup" icon="server" href="/labs/ip-transit/tunneling-hypervisor">
+    Route a whole subnet to VMs on Proxmox.
+  </Card>
+  <Card title="Customer API" icon="code" href="/labs/ip-transit/transit-api">
+    Manage tunnels from your own scripts.
+  </Card>
+</CardGroup>

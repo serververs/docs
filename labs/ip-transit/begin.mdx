@@ -61,15 +61,19 @@ Your Server (with Public IP)
 
 ---
 
-## Next Steps
+## Choose your setup
 
-<Card title="Tunneling Setup - For Cloud Providers" color="#ffa632" icon="train-tunnel" href="/labs/ip-transit/tunneling">
-For Cloud providers such as Microsoft Azure, Amazon Webservices, Oracle Cloud etc
-</Card>
-
-<Card title="Tunneling Setup - Hypervisors" color="#ffa632" icon="train-tunnel" href="/labs/ip-transit/tunneling-hypervisor">
-For Self Hosted Hypervisors such as Proxmox.
-</Card>
+<CardGroup cols={1}>
+  <Card title="Cloud providers" color="#ffa632" icon="cloud" href="/labs/ip-transit/tunneling">
+    Single routed IP for VMs on Microsoft Azure, AWS, Oracle Cloud and similar providers.
+  </Card>
+  <Card title="Self-hosted hypervisors" color="#ffa632" icon="server" href="/labs/ip-transit/tunneling-hypervisor">
+    Route a public subnet to VMs on Proxmox VE.
+  </Card>
+  <Card title="Customer API" color="#ffa632" icon="code" href="/labs/ip-transit/transit-api">
+    Manage your account and tunnels from your own scripts. Premium feature.
+  </Card>
+</CardGroup>
 
 ---
 
