@@ -5,18 +5,34 @@ description: "Deploy a Serververse™ Network Transit tunnel on a Proxmox VE hos
 icon: "server"
 ---
 
-This guide sets up a **Serververse™ Network Transit** tunnel on a self-hosted hypervisor and routes a public subnet to your VMs. The example uses **Proxmox VE**: you create a bridge on the host, the installer attaches your routed subnet to it, and any VM on that bridge gets a public IP.
+This guide sets up a **Serververse™ Network Transit** tunnel on a self-hosted hypervisor and routes a public subnet to your VMs. The example uses **Proxmox VE, but you may use any other hypervisor, steps are similar**: you create a bridge on the host, the installer attaches your routed subnet to it, and any VM on that bridge gets a public IP.
 
 <Info>
   As of **v0.3**, the install script automatically routes the subnet and assigns it to the Proxmox bridge. Follow every step below in order.
 </Info>
 
 <Info>
-This routed method is supported only if you have purchased a whole subnet with a minimum size of `/29`. Visit our store to place an order, or open a ticket on our Discord server for guidance.
+  This routed method is supported only if you have purchased a whole subnet with a minimum size of `/30`. Visit our store to place an order, or open a ticket on our Discord server for guidance.
 </Info>
 
 <Warning>
   Make sure you have **out-of-band access** (IPMI, VNC, or console) to the Proxmox host before you start. A misconfigured route on the host can cut off your connection.
+</Warning>
+
+<Warning>
+  **Important: Standard Subnet IP Usage**
+
+  With a standard subnet, **3 IP addresses are normally reserved**: the **network address, gateway address, and broadcast address**. For example, a **/29 contains 8 IP addresses, but normally only 5 can be directly assigned** to servers.
+
+  You can, however, **use all IP addresses from the subnet** by making your **L2 gateway, dedicated server, or another device act as the gateway** and handling the routing yourself. This allows you to avoid the traditional **network, gateway, and broadcast IP allocation**.
+
+  Keep in mind that this setup requires the gateway device to handle **Layer 2/Layer 3 forwarding and ARP correctly**. Since all traffic passes through the gateway, it must have sufficient **CPU and network capacity**.
+
+  **High packet rates, many concurrent connections, or high-bandwidth traffic can significantly increase CPU usage.** If the gateway is CPU-limited, it can become a **networking bottleneck**, even if the physical network interface still has plenty of available bandwidth.
+
+  The gateway also becomes a **single point of failure** unless redundancy is configured.
+
+  For most deployments, we recommend using the **IP Transit routed method** when you need to efficiently use the **entire subnet** without putting additional routing overhead on a dedicated gateway.
 </Warning>
 
 ## How it works
@@ -39,12 +55,15 @@ Your VMs (public IPs from the subnet)
   <Card title="Proxmox VE host" icon="server">
     With `root` access to the host shell.
   </Card>
+
   <Card title="Network Transit subnet" icon="network-wired">
     A Serververse account with a transit **subnet** assigned.
   </Card>
+
   <Card title="Out-of-band access" icon="life-ring">
     IPMI, VNC or console access to the host.
   </Card>
+
   <Card title="Cloud-init basics" icon="cloud">
     Familiarity with creating Proxmox VMs and cloud-init.
   </Card>
@@ -82,53 +101,67 @@ Your VMs (public IPs from the subnet)
       `bridge-ports none` is intentional. The bridge only carries routed traffic from the tunnel, so it isn't attached to a physical NIC. The MTU of `1420` matches WireGuard overhead.
     </Note>
   </Step>
-
   <Step title="Open your tunnel in the dashboard">
     Sign in to the [Serververse Labs Dashboard](https://labs.serververs.com).
 
     <Frame caption="Sign in to the dashboard">
-      <img src="/labs/images/ip-transit/dashboard-login.png" alt="Serververse Labs sign-in page" />
+      <img
+        src="/labs/images/ip-transit/dashboard-login.png"
+        alt="Serververse Labs sign-in page"
+      />
     </Frame>
 
     Go to **Tunnels**.
 
     <Frame caption="Your tunnels">
-      <img src="/labs/images/ip-transit/dashboard-tunnels-list.png" alt="Network Transit tunnels list" />
+      <img
+        src="/labs/images/ip-transit/dashboard-tunnels-list.png"
+        alt="Network Transit tunnels list"
+      />
     </Frame>
 
     Your assigned subnet tunnel appears as a card. Click it to open the details.
 
     <Frame caption="Subnet tunnel card">
-      <img src="/labs/images/ip-transit/hypervisor-tunnel-card.png" alt="Assigned subnet tunnel card" />
+      <img
+        src="/labs/images/ip-transit/hypervisor-tunnel-card.png"
+        alt="Assigned subnet tunnel card"
+      />
     </Frame>
   </Step>
-
   <Step title="Copy your install command">
     Click **Generate command** to copy your install command to the clipboard.
 
     <Frame caption="Generate the command">
-      <img src="/labs/images/ip-transit/hypervisor-generate-command.png" alt="Generate command button" />
+      <img
+        src="/labs/images/ip-transit/hypervisor-generate-command.png"
+        alt="Generate command button"
+      />
     </Frame>
 
     <Frame caption="Command copied to clipboard">
-      <img src="/labs/images/ip-transit/hypervisor-command-copied.png" alt="Command copied confirmation" />
+      <img
+        src="/labs/images/ip-transit/hypervisor-command-copied.png"
+        alt="Command copied confirmation"
+      />
     </Frame>
 
     <Note>
       The command is unique to your account and subnet. Treat it like a password and don't share it publicly.
     </Note>
   </Step>
-
   <Step title="Run the installer on the Proxmox host">
     Paste the command into the **host shell** (not inside a VM). When it finishes, the output looks like this:
 
     <Frame caption="Installer output">
-      <img src="/labs/images/ip-transit/hypervisor-install-output.png" alt="Installer output for a subnet tunnel" />
+      <img
+        src="/labs/images/ip-transit/hypervisor-install-output.png"
+        alt="Installer output for a subnet tunnel"
+      />
     </Frame>
 
     Note the **bridge IP** (the gateway) and the **usable range** it prints. You'll need both for the VM.
   </Step>
-
   <Step title="Create the virtual machine">
     1. Create a new VM in the Proxmox web interface.
     2. Under **Hardware**, edit the network device and set the bridge to **`br-transit`**.
@@ -138,13 +171,12 @@ Your VMs (public IPs from the subnet)
     | --- | --- | --- |
     | **IP Address** | An IP from your subnet, with its prefix length | `91.226.56.10/29` |
     | **Gateway** | The IP attached to the bridge, **not** the VM's own IP | `91.226.56.9` |
-    | **User / Password** | A root password so you can SSH in | |
+    | **User / Password** | A root password so you can SSH in |  |
 
     <Warning>
       The gateway must be the **bridge's** IP. Using the VM's own IP, or an address outside the subnet, leaves the VM without connectivity.
     </Warning>
   </Step>
-
   <Step title="Verify the IP">
     Start the VM, open its console or SSH in, and run:
 
@@ -155,7 +187,10 @@ Your VMs (public IPs from the subnet)
     ```
 
     <Frame caption="Expected result">
-      <img src="/labs/images/ip-transit/hypervisor-verify-curl.png" alt="curl output showing the routed public IP" />
+      <img
+        src="/labs/images/ip-transit/hypervisor-verify-curl.png"
+        alt="curl output showing the routed public IP"
+      />
     </Frame>
 
     <Check>
@@ -181,9 +216,9 @@ See the [`sv-transit` CLI reference](/labs/ip-transit/tunneling#manage-your-tunn
 <Warning>
   Do not restart the host's networking while the WireGuard tunnel is online. This causes a routing overlap and shuts down WireGuard.
 </Warning>
+
 <Info>
-  If a networking restart is really needed, use out-of-band access (IPMI, VNC, or console) to the Proxmox host and shut down WireGuard first with `wg-quick down sv-transit`. Then restart the networking.
-  Once networking is back online, start WireGuard again with `wg-quick up sv-transit`.
+  If a networking restart is really needed, use out-of-band access (IPMI, VNC, or console) to the Proxmox host and shut down WireGuard first with `wg-quick down sv-transit`. Then restart the networking. Once networking is back online, start WireGuard again with `wg-quick up sv-transit`.
 </Info>
 
 ## Troubleshooting
