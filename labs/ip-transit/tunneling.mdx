@@ -15,7 +15,7 @@ icon: "network-wired"
 
 <CardGroup cols={2}>
   <Card title="A Linux server" icon="server">
-    VPS, bare metal, container, or homelab machine.
+    VPS, bare metal, or homelab machine. [LXC containers are not supported](#unsupported-environments).
   </Card>
   <Card title="Root access" icon="lock">
     You'll need `root` or `sudo` on the server.
@@ -27,6 +27,14 @@ icon: "network-wired"
     A Serververse account with a transit tunnel assigned.
   </Card>
 </CardGroup>
+
+### Unsupported environments
+
+<Warning>
+  **Running Network Transit inside an LXC container is not supported.** Install the tunnel on a VPS or bare metal server. If you run Proxmox, see the [Hypervisor setup](/labs/ip-transit/tunneling-hypervisor) guide (for subnets only).
+
+  **Don't install Tailscale on the same server.** Tailscale and Network Transit conflict with each other, and running both on one machine will cause the tunnel or your connectivity to misbehave.
+</Warning>
 
 ## Set up your tunnel
 
@@ -219,6 +227,14 @@ Manage your tunnel from the **dashboard**, or directly on the server with the **
 
   <Accordion title="Installer says the token is invalid or expired" icon="key">
     Tokens are single-use and time-limited. Return to the tunnel in the dashboard, click **Generate command** again, and run the new command.
+  </Accordion>
+
+  <Accordion title="Installer fails or the tunnel won't come up in a container" icon="box">
+    Network Transit is not supported in LXC containers. Run the installer on a VPS, bare metal server, or a full VM instead.
+  </Accordion>
+
+  <Accordion title="Tunnel is unstable or traffic breaks with Tailscale installed" icon="triangle-exclamation">
+    Tailscale shouldn't be installed on the same server as Network Transit, as the two conflict. Remove Tailscale from the server, then check the tunnel with `sudo sv-transit status`. If it's still down, generate a fresh command in the dashboard and re-run the installer.
   </Accordion>
 
   <Accordion title="Public IP isn't reachable externally" icon="globe">
