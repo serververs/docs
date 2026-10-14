@@ -1,11 +1,11 @@
 ---
 title: "Tunneling setup for cloud providers"
 sidebarTitle: "Tunneling setup"
-description: "Deploy a Serververse™ Network Transit tunnel on your cloud server and route a real public IP to it."
+description: "Deploy a Serververse™ Transit tunnel on your cloud server and route a real public IP to it."
 icon: "network-wired"
 ---
 
-**Serververse™ Network Transit** gives your Linux server a dedicated public IP routed through the Serververse network. Provisioning is token-based: the dashboard generates a single install command that configures and brings up the tunnel for you.
+**Serververse™ Transit** gives your Linux server a dedicated public IP routed through the Serververse network. Provisioning is token-based: the dashboard generates a single install command that configures and brings up the tunnel for you.
 
 <Warning>
   Make sure you have **out-of-band access** (IPMI, VNC, or a provider console) before you start. A misconfigured route can temporarily cut off SSH.
@@ -31,9 +31,9 @@ icon: "network-wired"
 ### Unsupported environments
 
 <Warning>
-  **Running Network Transit inside an LXC container is not supported.** Install the tunnel on a VPS or bare metal server. If you run Proxmox, see the [Hypervisor setup](/labs/ip-transit/tunneling-hypervisor) guide (for subnets only).
+  **Running Serververse Transit inside an LXC container is not supported.** Install the tunnel on a VPS or bare metal server. If you run Proxmox, see the [Hypervisor setup](/labs/ip-transit/tunneling-hypervisor) guide (for subnets only).
 
-  **Don't install Tailscale on the same server.** Tailscale and Network Transit conflict with each other, and running both on one machine will cause the tunnel or your connectivity to misbehave.
+  **Don't install Tailscale on the same server.** Tailscale and Serververse Transit conflict with each other, and running both on one machine will cause the tunnel or your connectivity to misbehave.
 </Warning>
 
 ## Set up your tunnel
