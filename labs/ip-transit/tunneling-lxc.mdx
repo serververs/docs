@@ -5,8 +5,6 @@ description: "Configure an unprivileged Proxmox LXC container to run Serververse
 icon: "box"
 ---
 
-# Overview
-
 Serververse Transit can run inside an unprivileged Linux Container (LXC) using userspace WireGuard. By default, unprivileged containers do not have access to the TUN device required to establish a WireGuard tunnel.
 
 This guide explains how to configure the container, install the required dependencies, run the Serververse Transit installer, and verify the connection.
@@ -58,7 +56,7 @@ You do not need to enable LXC nesting or convert the container into a privileged
     If the container is running, perform a full shutdown and start it again. Restarting the operating system from inside the container is not sufficient.
 
     <Tip>
-      Using Proxmox 7 or an older version? See [Manual TUN Device Configuration](#manual-tun-device-configuration).
+      Using Proxmox 7 or an older version? See [How do I configure TUN passthrough on Proxmox 7?](#how-do-i-configure-tun-passthrough-on-proxmox-7).
     </Tip>
   </Step>
   <Step title="Install the dependencies">
@@ -167,7 +165,7 @@ If the `connmark OK` readiness check fails, choose one of the following approach
     ```
 
     <Warning>
-      Without the return-path rules, services exposed through Docker or port forwarding may not be reachable through your Transit IP. Services listening directly inside the container are not affected in the same way.
+      Without the return-path rules, services exposed through Docker or port forwarding may not be reachable through your Transit IP. Services listening directly inside the container work normally.
     </Warning>
   </Tab>
 </Tabs>
@@ -212,7 +210,7 @@ If the `connmark OK` readiness check fails, choose one of the following approach
     Restart the container if necessary and test DNS resolution again.
   </Accordion>
 
-  <Accordion title="The tunnel starts but services are unreachable" icon="network">
+  <Accordion title="The tunnel starts but services are unreachable" icon="network-wired">
     If services are exposed through Docker, NAT, or port forwarding, verify that the return-path rules are configured correctly.
 
     Check the `xt_connmark` module on the host and confirm that the tunnel configuration contains the required connection-marking rules.
@@ -263,7 +261,7 @@ Restart the container using a full shutdown and start.
 
 Package availability varies by Debian release. Check whether `wireguard-go` is available:
 
-```bash
+```text
 apt-cache policy wireguard-go
 ```
 
@@ -279,15 +277,15 @@ Userspace WireGuard generally consumes more CPU than the kernel implementation a
 
 If you control the Proxmox host, you can load the kernel WireGuard module:
 
-```bash
+```text
 modprobe wireguard
-echo wireguard > /etc/modules-load.d/sv-transit.conf
+echo wireguard >> /etc/modules-load.d/sv-transit.conf
 ```
 
-The tunnel can then use the kernel implementation when it is available and supported by the installation.
+WireGuard uses the kernel module automatically whenever it's loaded.
 
 ### What if my container is hosted by another provider?
 
 Ask your provider to enable access to `/dev/net/tun` for your container. If possible, also ask them to load the `xt_connmark` kernel module.
 
-If the provider cannot enable the required functionality, consider using the [no-host-access configuration](#configuring-return-path-rules) or running Transit in a virtual machine.
+If the provider cannot enable the required functionality, consider using the no-host-access configuration or running Transit in a virtual machine.
