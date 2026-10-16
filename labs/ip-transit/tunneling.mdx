@@ -99,50 +99,60 @@ icon: "network-wired"
     ```
 
     ```bash wget
-    bash <(wget -qO- https://labs-api.serververs.com/api/v0.3/provision/install.sh) --token <YOUR_TOKEN>
     ```
 
     </CodeGroup>
 
-    The installer:
+    <Steps>
+      <Step>
+        <CodeGroup>
 
-    - Validates your provisioning token
-    - Configures Transit for your use case
-    - Brings up the `sv-transit` tunnel interface
-    - Routes your allocated public IP through the Serververse network
-    - Installs the [`sv-transit` CLI](#manage-your-tunnel)
-  </Step>
-  <Step title="Verify the tunnel">
-    Check that the interface is up:
+        ```bash wget
+        ```
 
-    ```bash
-    ip link show sv-transit
-    ```
+        </CodeGroup>
 
-    Then confirm traffic leaves through your routed IP:
+        The installer:
 
-    ```bash
-    curl -4 --interface <YOUR_ROUTED_IP> ip.me
-    ```
+        - Validates your provisioning token
+        - Configures Transit for your use case
+        - Brings up the `sv-transit` tunnel interface
+        - Routes your allocated public IP through the Serververse network
+        - Installs the `sv-transit`[ CLI](#manage-your-tunnel)
+      </Step>
+      <Step title="Verify the tunnel">
+        Check that the interface is up:
 
-    <Check>
-      The IP returned should match the transit IP shown in your dashboard.
-    </Check>
+        ```bash
+        ip link show sv-transit
+        ```
 
-    In the dashboard, the tunnel should show as **Online**, with a recent last handshake, your public IP, and live bandwidth.
+        Then confirm traffic leaves through your routed IP:
 
-    <Frame caption="An online tunnel in the dashboard">
-      <img
-        src="/labs/images/ip-transit/dashboard-tunnel-details.png"
-        alt="Tunnel details page showing an online tunnel"
-      />
-    </Frame>
+        ```bash
+        curl -4 --interface <YOUR_ROUTED_IP> ip.me
+        ```
+
+        <Check>
+          The IP returned should match the transit IP shown in your dashboard.
+        </Check>
+
+        In the dashboard, the tunnel should show as **Online**, with a recent last handshake, your public IP, and live bandwidth.
+
+        <Frame caption="An online tunnel in the dashboard">
+          <img
+            src="/labs/images/ip-transit/dashboard-tunnel-details.png"
+            alt="Tunnel details page showing an online tunnel"
+          />
+        </Frame>
+      </Step>
+    </Steps>
+
+    ## Manage your tunnel
+
+    Manage your tunnel from the **dashboard**, or directly on the server with the `sv-transit `**CLI**.
   </Step>
 </Steps>
-
-## Manage your tunnel
-
-Manage your tunnel from the **dashboard**, or directly on the server with the **`sv-transit` CLI**.
 
 <Tabs>
   <Tab title="Dashboard">
