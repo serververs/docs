@@ -1,0 +1,293 @@
+---
+title: "Serververse Transit in LXC Containers"
+sidebarTitle: "LXC Container Setup"
+description: "Configure an unprivileged Proxmox LXC container to run Serververse Transit using userspace WireGuard."
+icon: "box"
+---
+
+# Overview
+
+Serververse Transit can run inside an unprivileged Linux Container (LXC) using userspace WireGuard. By default, unprivileged containers do not have access to the TUN device required to establish a WireGuard tunnel.
+
+This guide explains how to configure the container, install the required dependencies, run the Serververse Transit installer, and verify the connection.
+
+The instructions primarily target Proxmox VE hosts running Ubuntu 22.04 or newer inside the container.
+
+<Info>
+  **Routing a subnet to multiple containers?**
+
+  You do not need to install a separate Transit tunnel inside every container. Follow the [Hypervisor Setup](/labs/ip-transit/tunneling-hypervisor#using-lxc-containers) guide to connect your containers to `br-transit`.
+</Info>
+
+## How It Works
+
+LXC containers share the host's Linux kernel. An unprivileged container maps its root user to an unprivileged user on the host, restricting its ability to load kernel modules and access certain devices.
+
+Serververse Transit uses WireGuard for tunneling. Inside an LXC container, it can use `wireguard-go`, a userspace implementation of WireGuard that does not require the WireGuard kernel module.
+
+However, userspace WireGuard still requires access to the TUN device at `/dev/net/tun`. You must pass this device through from the Proxmox host before installing Transit.
+
+## Prerequisites
+
+Before proceeding, ensure that you have:
+
+- A Proxmox VE host with access to its shell or web interface.
+- An unprivileged LXC container running Ubuntu 22.04 or newer.
+- Root access inside the container.
+- An active Serververse Transit tunnel and access to the [Serververse Labs Dashboard](https://labs.serververs.com).
+
+You do not need to enable LXC nesting or convert the container into a privileged container.
+
+## Installation
+
+<Steps>
+  <Step title="Create an LXC container">
+    Create an unprivileged LXC container using an Ubuntu 22.04 or newer template.
+
+    Complete the initial setup and ensure that you can access the container through SSH or the Proxmox console.
+  </Step>
+  <Step title="Pass through the TUN device">
+    In the Proxmox web interface:
+
+    1. Select your container.
+    2. Open the **Resources** tab.
+    3. Select **Add** and then **Device Passthrough**.
+    4. Set the **Device Path** to `/dev/net/tun`.
+    5. Save the configuration.
+
+    If the container is running, perform a full shutdown and start it again. Restarting the operating system from inside the container is not sufficient.
+
+    <Tip>
+      Using Proxmox 7 or an older version? See [Manual TUN Device Configuration](#manual-tun-device-configuration).
+    </Tip>
+  </Step>
+  <Step title="Install the dependencies">
+    Open a shell inside the container. From the Proxmox host, you can use `pct enter <ct-id>`, replacing `<ct-id>` with the container ID.
+
+    Run:
+
+    ```bash
+    apt-get update
+    apt-get install -y wireguard-go wireguard-tools iptables iproute2 curl
+    ```
+  </Step>
+  <Step title="Verify the container configuration">
+    Run the following checks inside the container:
+
+    ```bash
+    test -c /dev/net/tun && echo "tun OK"
+    command -v wireguard-go >/dev/null && echo "wireguard-go OK"
+    
+    iptables -t mangle -N SVTEST &&
+      iptables -t mangle -A SVTEST \
+        -j CONNMARK --set-xmark 0x64/0xff &&
+      echo "connmark OK"
+    
+    iptables -t mangle -F SVTEST
+    iptables -t mangle -X SVTEST
+    ```
+
+    Confirm that the output includes:
+
+    - `tun OK`
+    - `wireguard-go OK`
+    - `connmark OK`
+
+    If the `connmark OK` check fails, follow [Configuring Return-Path Rules](#configuring-return-path-rules) before continuing.
+  </Step>
+  <Step title="Install Serververse Transit">
+    1. Sign in to the [Serververse Labs Dashboard](https://labs.serververs.com).
+    2. Navigate to **Tunnels**.
+    3. Open your tunnel and select **Generate command**.
+    4. Copy the generated command and execute it inside the LXC container.
+
+    If the WireGuard kernel module is unavailable, the installer may display the following message:
+
+    ```text
+    [!] Missing WireGuard kernel module. Falling back to slow userspace implementation.
+    ```
+
+    This is expected when using userspace WireGuard inside an LXC container.
+  </Step>
+  <Step title="Verify DNS resolution">
+    The installer may install `resolvconf`, which can interfere with the `/etc/resolv.conf` configuration managed by Proxmox.
+
+    If domain names stop resolving after installation, remove the package:
+
+    ```bash
+    apt-get purge -y resolvconf
+    ```
+
+    Restart the container if necessary, then verify that DNS resolution works.
+  </Step>
+  <Step title="Verify the tunnel">
+    Run:
+
+    ```bash
+    curl ip.me
+    sudo sv-transit status
+    ```
+
+    Confirm that `curl ip.me` returns the expected Transit public IP and that `sv-transit status` reports a recent WireGuard handshake.
+  </Step>
+</Steps>
+
+## Configuring Return-Path Rules
+
+Serververse Transit uses `iptables` connection-marking rules (`CONNMARK`) to ensure that replies from Docker containers, port-forwarded services, and other NAT-based workloads return through the tunnel.
+
+These rules require the `xt_connmark` kernel module. An unprivileged LXC container cannot load this module itself.
+
+If the `connmark OK` readiness check fails, choose one of the following approaches.
+
+<Tabs>
+  <Tab title="Host access available">
+    **Recommended:** Load the required module on the Proxmox host.
+
+    Run the following commands on the host:
+
+    ```bash
+    modprobe xt_connmark
+    echo xt_connmark > /etc/modules-load.d/sv-transit.conf
+    ```
+
+    The first command loads the module immediately. The second ensures that it is loaded automatically at boot.
+
+    Re-run the `connmark` readiness check inside the container. Once it succeeds, continue with the Transit installer.
+  </Tab>
+  <Tab title="No host access">
+    If you cannot modify the Proxmox host and do not use Docker, port forwarding, or other NAT-based services inside the container, you can run Transit without the return-path rules.
+
+    1. Run the installer to generate the tunnel configuration.
+    2. If the tunnel fails to start with a `CONNMARK` error, remove the relevant rules from the configuration and start the tunnel.
+
+    ```bash
+    sed -i '/CONNMARK/d; /fwmark/d' /etc/wireguard/sv-transit.conf
+    systemctl enable --now wg-quick@sv-transit
+    ```
+
+    <Warning>
+      Without the return-path rules, services exposed through Docker or port forwarding may not be reachable through your Transit IP. Services listening directly inside the container are not affected in the same way.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="RTNETLINK answers: Not supported" icon="box">
+    This can indicate that userspace WireGuard is unavailable or that the TUN device has not been passed through correctly.
+
+    Verify that both `/dev/net/tun` and `wireguard-go` are available:
+
+    ```bash
+    test -c /dev/net/tun && echo "tun OK"
+    command -v wireguard-go
+    ```
+
+    If either check fails, correct the configuration before running the installer again.
+  </Accordion>
+
+  <Accordion title="Couldn't load target CONNMARK" icon="shield-halved">
+    The required `xt_connmark` kernel module may not be loaded on the Proxmox host.
+
+    Follow [Configuring Return-Path Rules](#configuring-return-path-rules) to load the module or use the limited configuration described there.
+  </Accordion>
+
+  <Accordion title="/dev/net/tun is missing" icon="rotate">
+    A full container shutdown and start is required after adding the device.
+
+    In Proxmox, confirm that `/dev/net/tun` appears in the container's **Resources** tab, then stop and start the container.
+  </Accordion>
+
+  <Accordion title="Domain names no longer resolve" icon="globe">
+    The `resolvconf` package may have changed how DNS configuration is managed.
+
+    Remove it if it is not required:
+
+    ```bash
+    apt-get purge -y resolvconf
+    ```
+
+    Restart the container if necessary and test DNS resolution again.
+  </Accordion>
+
+  <Accordion title="The tunnel starts but services are unreachable" icon="network">
+    If services are exposed through Docker, NAT, or port forwarding, verify that the return-path rules are configured correctly.
+
+    Check the `xt_connmark` module on the host and confirm that the tunnel configuration contains the required connection-marking rules.
+  </Accordion>
+</AccordionGroup>
+
+## Frequently Asked Questions
+
+### Can I use the Proxmox shell instead of the web interface?
+
+Yes. Run the following command on the Proxmox host, replacing `<ct-id>` with your container ID:
+
+```bash
+pct set <ct-id> --dev0 /dev/net/tun
+```
+
+Shut down the container and start it again to apply the change.
+
+### How do I configure TUN passthrough on Proxmox 7?
+
+If the Device Passthrough option is unavailable, edit the container configuration on the Proxmox host.
+
+For example, container `112` uses `/etc/pve/lxc/112.conf`.
+
+Add:
+
+```text
+lxc.cgroup2.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+```
+
+Save the file and perform a full shutdown and start of the container.
+
+### How do I configure Proxmox 6 or earlier?
+
+Older Proxmox versions use the legacy `lxc.cgroup` directive instead of `lxc.cgroup2`.
+
+Add the following to the container configuration:
+
+```text
+lxc.cgroup.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+```
+
+Restart the container using a full shutdown and start.
+
+### Can I use a Debian container?
+
+Package availability varies by Debian release. Check whether `wireguard-go` is available:
+
+```bash
+apt-cache policy wireguard-go
+```
+
+If no package candidate is available, use an Ubuntu 22.04 or newer template.
+
+### Can I use an older Linux distribution?
+
+Older operating systems may not support the required device and cgroup configuration. If you cannot configure TUN passthrough, use a newer container image or run Serververse Transit inside a virtual machine.
+
+### Is userspace WireGuard slower?
+
+Userspace WireGuard generally consumes more CPU than the kernel implementation and may deliver lower throughput.
+
+If you control the Proxmox host, you can load the kernel WireGuard module:
+
+```bash
+modprobe wireguard
+echo wireguard > /etc/modules-load.d/sv-transit.conf
+```
+
+The tunnel can then use the kernel implementation when it is available and supported by the installation.
+
+### What if my container is hosted by another provider?
+
+Ask your provider to enable access to `/dev/net/tun` for your container. If possible, also ask them to load the `xt_connmark` kernel module.
+
+If the provider cannot enable the required functionality, consider using the [no-host-access configuration](#configuring-return-path-rules) or running Transit in a virtual machine.

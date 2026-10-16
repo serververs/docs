@@ -203,6 +203,22 @@ Your VMs (public IPs from the subnet)
 
 Repeat the **Create the virtual machine** step for each VM: same `br-transit` bridge, same gateway, and a different unused IP from your subnet. Don't assign the network, broadcast, or gateway addresses to a VM.
 
+## Using LXC Containers
+
+LXC containers can use the `br-transit` bridge in the same way as virtual machines. Configure the container's network interface to use `br-transit`, assign a static IP address from your subnet, and set the bridge IP as the gateway.
+
+For example:
+
+```bash
+pct set <ct-id> --net0 name=eth0,bridge=br-transit,ip=192.168.1.67/29,gw=192.168.1.1 
+```
+
+Replace `<ct-id>` with your container ID and adjust the IP address, subnet prefix, and gateway to match your allocation and bridge configuration.
+
+No additional Transit installation is required inside the container when using this bridge-based routing setup.
+
+If you want to run a separate Transit tunnel directly inside an LXC container instead, follow the [LXC Container Setup](/labs/ip-transit/tunneling-lxc) guide.
+
 ## Managing your tunnel
 
 View all your transit IPs, their status, and usage in the [dashboard](https://labs.serververs.com) under **Tunnels**. To check the tunnel from the host:

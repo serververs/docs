@@ -15,14 +15,17 @@ icon: "network-wired"
 
 <CardGroup cols={2}>
   <Card title="A Linux server" icon="server">
-    VPS, bare metal, or homelab machine. [LXC containers are not supported](#unsupported-environments).
+    VPS, bare-metal server, or homelab machine. For LXC containers, follow the [LXC Container Setup](https://chatgpt.com/labs/ip-transit/tunneling-lxc) guide.
   </Card>
+
   <Card title="Root access" icon="lock">
     You'll need `root` or `sudo` on the server.
   </Card>
+
   <Card title="curl or wget" icon="terminal">
     Used to download and run the installer.
   </Card>
+
   <Card title="Network Transit access" icon="user-check">
     A Serververse account with a transit tunnel assigned.
   </Card>
@@ -31,9 +34,7 @@ icon: "network-wired"
 ### Unsupported environments
 
 <Warning>
-  **Running Serververse Transit inside an LXC container is not supported.** Install the tunnel on a VPS or bare metal server. If you run Proxmox, see the [Hypervisor setup](/labs/ip-transit/tunneling-hypervisor) guide (for subnets only).
-
-  **Don't install Tailscale on the same server.** Tailscale and Serververse Transit conflict with each other, and running both on one machine will cause the tunnel or your connectivity to misbehave.
+  **LXC containers require** `/dev/net/tun `**passthrough before installation.** Follow the [LXC Container Setup](https://chatgpt.com/labs/ip-transit/tunneling-lxc) guide to configure the container first.
 </Warning>
 
 ## Set up your tunnel
@@ -43,42 +44,56 @@ icon: "network-wired"
     Sign in to the [Serververse Labs Dashboard](https://labs.serververs.com).
 
     <Frame caption="Sign in to the dashboard">
-      <img src="/labs/images/ip-transit/dashboard-login.png" alt="Serververse Labs sign-in page" />
+      <img
+        src="/labs/images/ip-transit/dashboard-login.png"
+        alt="Serververse Labs sign-in page"
+      />
     </Frame>
 
     Go to **Tunnels**.
 
     <Frame caption="Your tunnels">
-      <img src="/labs/images/ip-transit/dashboard-tunnels-list.png" alt="Network Transit tunnels list" />
+      <img
+        src="/labs/images/ip-transit/dashboard-tunnels-list.png"
+        alt="Network Transit tunnels list"
+      />
     </Frame>
 
     Your assigned tunnel appears as a card. Click it to open the tunnel details.
 
     <Frame caption="Assigned tunnel card">
-      <img src="/labs/images/ip-transit/cloud-tunnel-card.png" alt="Assigned tunnel card" />
+      <img
+        src="/labs/images/ip-transit/cloud-tunnel-card.png"
+        alt="Assigned tunnel card"
+      />
     </Frame>
   </Step>
-
   <Step title="Copy your install command">
     The details page shows your public IP, bandwidth usage, and transfer rate. Click **Generate command** to copy the install command to your clipboard.
 
     <Frame caption="Generate the command">
-      <img src="/labs/images/ip-transit/cloud-generate-command.png" alt="Generate command button" />
+      <img
+        src="/labs/images/ip-transit/cloud-generate-command.png"
+        alt="Generate command button"
+      />
     </Frame>
 
     <Frame caption="Command copied to clipboard">
-      <img src="/labs/images/ip-transit/cloud-command-copied.png" alt="Command copied confirmation" />
+      <img
+        src="/labs/images/ip-transit/cloud-command-copied.png"
+        alt="Command copied confirmation"
+      />
     </Frame>
 
     <Note>
       The command is unique to your account and transit IP. Treat it like a password and don't share it publicly.
     </Note>
   </Step>
-
   <Step title="Run the installer">
     SSH into your server and paste the command. It looks like this:
 
     <CodeGroup>
+
     ```bash curl
     bash <(curl -fsSL https://labs-api.serververs.com/api/v0.3/provision/install.sh) --token <YOUR_TOKEN>
     ```
@@ -86,6 +101,7 @@ icon: "network-wired"
     ```bash wget
     bash <(wget -qO- https://labs-api.serververs.com/api/v0.3/provision/install.sh) --token <YOUR_TOKEN>
     ```
+
     </CodeGroup>
 
     The installer:
@@ -96,7 +112,6 @@ icon: "network-wired"
     - Routes your allocated public IP through the Serververse network
     - Installs the [`sv-transit` CLI](#manage-your-tunnel)
   </Step>
-
   <Step title="Verify the tunnel">
     Check that the interface is up:
 
@@ -117,7 +132,10 @@ icon: "network-wired"
     In the dashboard, the tunnel should show as **Online**, with a recent last handshake, your public IP, and live bandwidth.
 
     <Frame caption="An online tunnel in the dashboard">
-      <img src="/labs/images/ip-transit/dashboard-tunnel-details.png" alt="Tunnel details page showing an online tunnel" />
+      <img
+        src="/labs/images/ip-transit/dashboard-tunnel-details.png"
+        alt="Tunnel details page showing an online tunnel"
+      />
     </Frame>
   </Step>
 </Steps>
@@ -142,7 +160,6 @@ Manage your tunnel from the **dashboard**, or directly on the server with the **
       </Step>
     </Steps>
   </Tab>
-
   <Tab title="sv-transit CLI">
     The installer adds `sv-transit` to your server automatically.
 
@@ -230,7 +247,7 @@ Manage your tunnel from the **dashboard**, or directly on the server with the **
   </Accordion>
 
   <Accordion title="Installer fails or the tunnel won't come up in a container" icon="box">
-    Network Transit is not supported in LXC containers. Run the installer on a VPS, bare metal server, or a full VM instead.
+    LXC containers require access to `/dev/net/tun` and the `wireguard-go` package before installation. Follow the [LXC Container Setup](https://chatgpt.com/labs/ip-transit/tunneling-lxc) guide and verify the container prerequisites before running the installer.
   </Accordion>
 
   <Accordion title="Tunnel is unstable or traffic breaks with Tailscale installed" icon="triangle-exclamation">
@@ -252,6 +269,7 @@ Manage your tunnel from the **dashboard**, or directly on the server with the **
   <Card title="Hypervisor setup" icon="server" href="/labs/ip-transit/tunneling-hypervisor">
     Route a whole subnet to VMs on Proxmox.
   </Card>
+
   <Card title="Customer API" icon="code" href="/labs/ip-transit/transit-api">
     Manage tunnels from your own scripts.
   </Card>
