@@ -65,8 +65,8 @@
     ]
   },
   "logo": {
-    "light": "https://serververs.com/assets/images/3-bg-removed.ico",
-    "dark": "https://serververs.com/assets/images/3-bg-removed.ico"
+    "light": "/images/6.png",
+    "dark": "/favicon.ico"
   },
   "navbar": {
     "links": [
