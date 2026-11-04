@@ -66,10 +66,19 @@
   },
   "logo": {
     "light": "/images/6.png",
-    "dark": "/favicon.ico"
+    "dark": "/favicon.ico",
+    "href": "https://www.serververs.com"
   },
   "navbar": {
     "links": [
+      {
+        "label": "Website",
+        "href": "https://www.serververs.com"
+      },
+      {
+        "label": "Blog",
+        "href": "https://www.serververs.com/blog/"
+      },
       {
         "label": "Support",
         "href": "mailto:care@serververs.com"
@@ -93,7 +102,38 @@
       "hacker-news": "https://news.ycombinator.com/user?id=serververse",
       "youtube": "https://www.youtube.com/@serververse",
       "facebook": "https://www.facebook.com/profile.php?id=61558230523697"
-    }
+    },
+    "links": [
+      {
+        "header": "Serververse",
+        "items": [
+          {
+            "label": "Website",
+            "href": "https://www.serververs.com"
+          },
+          {
+            "label": "Game servers",
+            "href": "https://www.serververs.com/game-server-hosting"
+          },
+          {
+            "label": "VPS",
+            "href": "https://www.serververs.com/vps"
+          },
+          {
+            "label": "Shield",
+            "href": "https://www.serververs.com/shield"
+          },
+          {
+            "label": "Blog",
+            "href": "https://www.serververs.com/blog/"
+          },
+          {
+            "label": "Forum",
+            "href": "https://www.serververs.com/forum/"
+          }
+        ]
+      }
+    ]
   },
   "description": "Any Problem Occured?, Here's your Solution @ Serververse",
   "background": {
