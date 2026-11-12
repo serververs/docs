@@ -317,6 +317,11 @@ curl -X POST https://labs-api.serververs.com/api/public/v0.3/tunnels/101/install
   "token": "a1b2c3...",
   "installCmd": "bash <(curl -fsSL https://labs-api.serververs.com/api/v0.3/provision/install.sh) --token a1b2c3...",
   "removeCmd": "bash <(curl -fsSL https://labs-api.serververs.com/api/v0.3/provision/install.sh) --remove",
+  "windows": {
+    "installCmd": "& ([scriptblock]::Create((irm https://labs-api.serververs.com/api/v0.3/provision/install.ps1))) -Token a1b2c3...",
+    "removeCmd": "& ([scriptblock]::Create((irm https://labs-api.serververs.com/api/v0.3/provision/install.ps1))) -Remove",
+    "enableScriptsCmd": "reg add HKLM\\Software\\WireGuard /v DangerousScriptExecution /t REG_DWORD /d 1 /f"
+  },
   "expiresAt": "2026-10-02T12:00:00.000Z",
   "ttlHours": 2,
   "tunnelLabel": "office-router",
@@ -326,6 +331,30 @@ curl -X POST https://labs-api.serververs.com/api/public/v0.3/tunnels/101/install
 </ResponseExample>
 
 `POST /tunnels/:id/install-token`
+
+#### Windows
+
+The same token installs the tunnel on Windows as an **additional IP**: the machine's
+normal traffic is not sent through the tunnel, only traffic to and from the public IP.
+A token works once, so use it one of two ways:
+
+- **Automatic.** Run `windows.installCmd` in PowerShell opened with *Run as administrator*.
+  It installs WireGuard if needed, sets the tunnel up as a service (it survives reboots)
+  and starts it. `windows.removeCmd` removes it again.
+- **By hand.** Fetch a Windows config and import it in the WireGuard app:
+
+  ```bash cURL
+  curl -X POST https://labs-api.serververs.com/api/v0.3/provision/redeem \
+    -H "Content-Type: application/json" \
+    -d '{"token": "a1b2c3...", "platform": "windows"}' -o sv-transit.conf
+  ```
+
+  Before activating it, run `windows.enableScriptsCmd` once per machine as administrator.
+  It lets the config add the one route it needs; without it the public IP will not answer.
+
+Ping to the public IP is allowed automatically. Open the ports of your own services in
+Windows Firewall. Only tunnels with single public IPs work on Windows; a tunnel that
+routes a subnet answers `422 WINDOWS_UNSUPPORTED`, and the token is not used up.
 
 ---
 
